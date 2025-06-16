@@ -71,4 +71,6 @@ if (app.Environment.IsDevelopment())
 
 
 app.MapControllers();
+app.MapGet("/", () => "Wargame API attiva!");
+
 app.Run();
