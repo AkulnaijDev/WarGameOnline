@@ -1,25 +1,28 @@
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
-node_modules
-dist
-dist-ssr
-*.local
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
+# --- BACKEND (.NET) ---
+bin/
+obj/
+.vs/
+*.db
+*.sqlite
 *.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-.vscode
+*.user
+*.userosscache
+*.sln.docstates
+*.log
+
+# Ignora chiavi e configurazioni sensibili
+.env
+appsettings.*.json
+appsettings.Development.json
+
+# --- FRONTEND (Vite + Node) ---
+node_modules/
+dist/
+.env
+*.log
+coverage/
+.vite/
+
+# --- Sistema ---
+.DS_Store
+Thumbs.db
