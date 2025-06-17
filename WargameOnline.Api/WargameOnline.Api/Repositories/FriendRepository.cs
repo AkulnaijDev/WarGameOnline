@@ -10,6 +10,7 @@ namespace WargameOnline.Api.Repositories
         Task<User?> GetByUsernameAsync(string username);
         Task<IEnumerable<User>> GetPendingReceivedAsync(int userId);
         Task<bool> RespondToRequestAsync(int userId, string username, string action);
+        Task<IEnumerable<User>> GetAcceptedFriendsAsync(int userId);
 
 
     }
@@ -78,6 +79,20 @@ namespace WargameOnline.Api.Repositories
 
             var rows = await conn.ExecuteAsync(update, new { action, addresseeId, requesterId });
             return rows > 0;
+        }
+
+        public async Task<IEnumerable<User>> GetAcceptedFriendsAsync(int userId)
+        {
+            using var conn = new SqliteConnection(_conn);
+            const string query = """
+        SELECT u.*
+        FROM Friendships f
+        JOIN Users u ON (u.Id = f.RequesterId OR u.Id = f.AddresseeId)
+        WHERE (f.RequesterId = @userId OR f.AddresseeId = @userId)
+          AND f.Status = 'Accepted'
+          AND u.Id != @userId
+    """;
+            return await conn.QueryAsync<User>(query, new { userId });
         }
 
     }

@@ -26,8 +26,12 @@ export const FriendsProvider = ({ children }: { children: ReactNode }) => {
   const [friends, setFriends] = useState<Friend[]>([])
   const [activeChat, setActiveChat] = useState<Friend | null>(null)
   const [pendingCount, setPendingCount] = useState(0)
+  const [token, setToken] = useState<string | null>(null)
 
-  const token = localStorage.getItem('token')
+  useEffect(() => {
+    const stored = localStorage.getItem('token')
+    setToken(stored)
+  }, [])
 
   useEffect(() => {
     if (!token) return
@@ -42,6 +46,11 @@ export const FriendsProvider = ({ children }: { children: ReactNode }) => {
             headers: { Authorization: `Bearer ${token}` },
           }),
         ])
+
+        if (!friendsRes.ok || !pendingRes.ok) {
+          const text = await friendsRes.text()
+          throw new Error(`Errore API: ${text}`)
+        }
 
         const friends = await friendsRes.json()
         const pending = await pendingRes.json()
@@ -60,6 +69,15 @@ export const FriendsProvider = ({ children }: { children: ReactNode }) => {
 
   const openChat = (f: Friend) => setActiveChat(f)
   const closeChat = () => setActiveChat(null)
+
+  // 👇 Mostra un messaggio se l’utente non è loggato
+  if (!token) {
+    return (
+      <div className="text-sm text-slate-400 px-4 py-2">
+        Effettua il login per accedere alla lista amici
+      </div>
+    )
+  }
 
   return (
     <FriendsContext.Provider

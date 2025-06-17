@@ -46,13 +46,14 @@ builder.Services.AddSwaggerGen(c =>
 
 builder.Services.AddSingleton<AuthService>();
 builder.Services.AddSingleton<DapperContext>();
-builder.Services.AddSingleton<IOnlineUserTracker, InMemoryOnlineUserTracker>();
 builder.Services.AddSignalR();
 
 
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IFriendRepository, FriendRepository>();
+builder.Services.AddSingleton<IOnlineUserTracker, InMemoryOnlineUserTracker>();
+
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(opt =>
@@ -71,11 +72,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddCors(options =>
 {
-    options.AddDefaultPolicy(policy =>
+    options.AddPolicy("FrontendPolicy", policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.WithOrigins("http://localhost:5173")
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials();
     });
 });
 
@@ -84,7 +86,7 @@ var app = builder.Build();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseCors();
+app.UseCors("FrontendPolicy");
 
 if (app.Environment.IsDevelopment())
 {

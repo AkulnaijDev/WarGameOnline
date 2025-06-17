@@ -66,6 +66,29 @@ namespace WargameOnline.Api.Controllers
             return Ok($"Richiesta {dto.Action.ToLower()} a {dto.Username}");
         }
 
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> GetFriends()
+        {
+            var claim = User?.FindFirst("id");
+            if (claim == null)
+                return Unauthorized("Utente non autenticato");
+
+            var currentId = int.Parse(claim.Value);
+            var friends = await _friends.GetAcceptedFriendsAsync(currentId);
+
+            var result = friends.Select(f => new {
+                f.Id,
+                f.Username,
+                IsOnline = _tracker.IsOnline(f.Id)
+            });
+
+            return Ok(result);
+        }
+
+
+
+
     }
 
 }
