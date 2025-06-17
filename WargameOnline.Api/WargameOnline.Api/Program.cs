@@ -7,6 +7,8 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+DotNetEnv.Env.Load();
+
 builder.Configuration.AddEnvironmentVariables();
 
 builder.Services.AddControllers();
@@ -59,16 +61,26 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 var app = builder.Build();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseCors();
 
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
 
 app.MapControllers();
 app.MapGet("/", () => "Wargame API attiva!");

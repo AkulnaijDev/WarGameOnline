@@ -3,16 +3,32 @@
   "WorkspaceRootPath": "E:\\MieRepo\\WargameOnline\\WargameOnline.Api\\WargameOnline.Api\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{E5FDCC3C-6A95-4B88-357C-F18259C4AB16}|WargameOnline.Api.csproj|e:\\mierepo\\wargameonline\\wargameonline.api\\wargameonline.api\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{E5FDCC3C-6A95-4B88-357C-F18259C4AB16}|WargameOnline.Api.csproj|solutionrelative:properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{E5FDCC3C-6A95-4B88-357C-F18259C4AB16}|WargameOnline.Api.csproj|e:\\mierepo\\wargameonline\\wargameonline.api\\wargameonline.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{E5FDCC3C-6A95-4B88-357C-F18259C4AB16}|WargameOnline.Api.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
+      "AbsoluteMoniker": "D:0:0:{E5FDCC3C-6A95-4B88-357C-F18259C4AB16}|WargameOnline.Api.csproj|e:\\mierepo\\wargameonline\\wargameonline.api\\wargameonline.api\\.gitignore||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{E5FDCC3C-6A95-4B88-357C-F18259C4AB16}|WargameOnline.Api.csproj|solutionrelative:.gitignore||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{E5FDCC3C-6A95-4B88-357C-F18259C4AB16}|WargameOnline.Api.csproj|e:\\mierepo\\wargameonline\\wargameonline.api\\wargameonline.api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
       "RelativeMoniker": "D:0:0:{E5FDCC3C-6A95-4B88-357C-F18259C4AB16}|WargameOnline.Api.csproj|solutionrelative:appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E5FDCC3C-6A95-4B88-357C-F18259C4AB16}|WargameOnline.Api.csproj|e:\\mierepo\\wargameonline\\wargameonline.api\\wargameonline.api\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{E5FDCC3C-6A95-4B88-357C-F18259C4AB16}|WargameOnline.Api.csproj|solutionrelative:properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E5FDCC3C-6A95-4B88-357C-F18259C4AB16}|WargameOnline.Api.csproj|e:\\mierepo\\wargameonline\\wargameonline.api\\wargameonline.api\\.env||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{E5FDCC3C-6A95-4B88-357C-F18259C4AB16}|WargameOnline.Api.csproj|solutionrelative:.env||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E5FDCC3C-6A95-4B88-357C-F18259C4AB16}|WargameOnline.Api.csproj|e:\\mierepo\\wargameonline\\wargameonline.api\\wargameonline.api\\readme.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}",
+      "RelativeMoniker": "D:0:0:{E5FDCC3C-6A95-4B88-357C-F18259C4AB16}|WargameOnline.Api.csproj|solutionrelative:readme.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E5FDCC3C-6A95-4B88-357C-F18259C4AB16}|WargameOnline.Api.csproj|e:\\mierepo\\wargameonline\\wargameonline.api\\wargameonline.api\\wargameonline.api.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{E5FDCC3C-6A95-4B88-357C-F18259C4AB16}|WargameOnline.Api.csproj|solutionrelative:wargameonline.api.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
     },
     {
       "AbsoluteMoniker": "D:0:0:{E5FDCC3C-6A95-4B88-357C-F18259C4AB16}|WargameOnline.Api.csproj|e:\\mierepo\\wargameonline\\wargameonline.api\\wargameonline.api\\services\\usersessionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -74,72 +90,85 @@
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "appsettings.json",
-              "DocumentMoniker": "E:\\MieRepo\\WargameOnline\\WargameOnline.Api\\WargameOnline.Api\\appsettings.json",
-              "RelativeDocumentMoniker": "appsettings.json",
-              "ToolTip": "E:\\MieRepo\\WargameOnline\\WargameOnline.Api\\WargameOnline.Api\\appsettings.json",
-              "RelativeToolTip": "appsettings.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-06-16T21:05:38.828Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 9,
-              "Title": "DTOs.cs",
-              "DocumentMoniker": "E:\\MieRepo\\WargameOnline\\WargameOnline.Api\\WargameOnline.Api\\Models\\DTOs.cs",
-              "RelativeDocumentMoniker": "Models\\DTOs.cs",
-              "ToolTip": "E:\\MieRepo\\WargameOnline\\WargameOnline.Api\\WargameOnline.Api\\Models\\DTOs.cs",
-              "RelativeToolTip": "Models\\DTOs.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-16T20:43:01.636Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "UserSessionService.cs",
-              "DocumentMoniker": "E:\\MieRepo\\WargameOnline\\WargameOnline.Api\\WargameOnline.Api\\Services\\UserSessionService.cs",
-              "RelativeDocumentMoniker": "Services\\UserSessionService.cs",
-              "ToolTip": "E:\\MieRepo\\WargameOnline\\WargameOnline.Api\\WargameOnline.Api\\Services\\UserSessionService.cs",
-              "RelativeToolTip": "Services\\UserSessionService.cs",
+              "DocumentIndex": 6,
+              "Title": "WargameOnline.Api",
+              "DocumentMoniker": "E:\\MieRepo\\WargameOnline\\WargameOnline.Api\\WargameOnline.Api\\WargameOnline.Api.csproj",
+              "RelativeDocumentMoniker": "WargameOnline.Api.csproj",
+              "ToolTip": "E:\\MieRepo\\WargameOnline\\WargameOnline.Api\\WargameOnline.Api\\WargameOnline.Api.csproj",
+              "RelativeToolTip": "WargameOnline.Api.csproj",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-16T20:20:09.755Z",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2025-06-17T17:25:17.888Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": ".gitignore",
+              "DocumentMoniker": "E:\\MieRepo\\WargameOnline\\WargameOnline.Api\\WargameOnline.Api\\.gitignore",
+              "RelativeDocumentMoniker": ".gitignore",
+              "ToolTip": "E:\\MieRepo\\WargameOnline\\WargameOnline.Api\\WargameOnline.Api\\.gitignore",
+              "RelativeToolTip": ".gitignore",
+              "ViewState": "AgIAAJsBAAAAAAAAAAAwPaoBAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-06-17T17:32:33.499Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "README.md",
+              "DocumentMoniker": "E:\\MieRepo\\WargameOnline\\WargameOnline.Api\\WargameOnline.Api\\README.md",
+              "RelativeDocumentMoniker": "README.md",
+              "ToolTip": "E:\\MieRepo\\WargameOnline\\WargameOnline.Api\\WargameOnline.Api\\README.md",
+              "RelativeToolTip": "README.md",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAEAAAADAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2025-06-17T17:26:11.145Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 4,
+              "Title": ".env",
+              "DocumentMoniker": "E:\\MieRepo\\WargameOnline\\WargameOnline.Api\\WargameOnline.Api\\.env",
+              "RelativeDocumentMoniker": ".env",
+              "ToolTip": "E:\\MieRepo\\WargameOnline\\WargameOnline.Api\\WargameOnline.Api\\.env",
+              "RelativeToolTip": ".env",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-06-17T17:21:32.136Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
               "Title": "AuthService.cs",
               "DocumentMoniker": "E:\\MieRepo\\WargameOnline\\WargameOnline.Api\\WargameOnline.Api\\Services\\AuthService.cs",
               "RelativeDocumentMoniker": "Services\\AuthService.cs",
               "ToolTip": "E:\\MieRepo\\WargameOnline\\WargameOnline.Api\\WargameOnline.Api\\Services\\AuthService.cs",
               "RelativeToolTip": "Services\\AuthService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAAAwAAAAAAAAAA==",
+              "ViewState": "AgIAAAQAAAAAAAAAAAAUwBcAAAAIAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-06-16T20:19:53.553Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
               "Title": "Program.cs",
               "DocumentMoniker": "E:\\MieRepo\\WargameOnline\\WargameOnline.Api\\WargameOnline.Api\\Program.cs",
               "RelativeDocumentMoniker": "Program.cs",
               "ToolTip": "E:\\MieRepo\\WargameOnline\\WargameOnline.Api\\WargameOnline.Api\\Program.cs",
               "RelativeToolTip": "Program.cs",
-              "ViewState": "AgIAADoAAAAANDMzMzMLwEoAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-06-16T20:17:03.053Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 3,
               "Title": "launchSettings.json",
               "DocumentMoniker": "E:\\MieRepo\\WargameOnline\\WargameOnline.Api\\WargameOnline.Api\\Properties\\launchSettings.json",
               "RelativeDocumentMoniker": "Properties\\launchSettings.json",
@@ -152,33 +181,72 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 10,
               "Title": "DapperContext.cs",
               "DocumentMoniker": "E:\\MieRepo\\WargameOnline\\WargameOnline.Api\\WargameOnline.Api\\Data\\DapperContext.cs",
               "RelativeDocumentMoniker": "Data\\DapperContext.cs",
               "ToolTip": "E:\\MieRepo\\WargameOnline\\WargameOnline.Api\\WargameOnline.Api\\Data\\DapperContext.cs",
               "RelativeToolTip": "Data\\DapperContext.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAdAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-06-16T20:44:05.763Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 9,
               "Title": "UserRepository.cs",
               "DocumentMoniker": "E:\\MieRepo\\WargameOnline\\WargameOnline.Api\\WargameOnline.Api\\Repositories\\UserRepository.cs",
               "RelativeDocumentMoniker": "Repositories\\UserRepository.cs",
               "ToolTip": "E:\\MieRepo\\WargameOnline\\WargameOnline.Api\\WargameOnline.Api\\Repositories\\UserRepository.cs",
               "RelativeToolTip": "Repositories\\UserRepository.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABwAAAAeAAAAAAAAAA==",
+              "ViewState": "AgIAABQAAAAAAAAAAAAswCsAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-06-16T20:45:01.558Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "E:\\MieRepo\\WargameOnline\\WargameOnline.Api\\WargameOnline.Api\\appsettings.json",
+              "RelativeDocumentMoniker": "appsettings.json",
+              "ToolTip": "E:\\MieRepo\\WargameOnline\\WargameOnline.Api\\WargameOnline.Api\\appsettings.json",
+              "RelativeToolTip": "appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-06-16T21:05:38.828Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
               "DocumentIndex": 7,
+              "Title": "UserSessionService.cs",
+              "DocumentMoniker": "E:\\MieRepo\\WargameOnline\\WargameOnline.Api\\WargameOnline.Api\\Services\\UserSessionService.cs",
+              "RelativeDocumentMoniker": "Services\\UserSessionService.cs",
+              "ToolTip": "E:\\MieRepo\\WargameOnline\\WargameOnline.Api\\WargameOnline.Api\\Services\\UserSessionService.cs",
+              "RelativeToolTip": "Services\\UserSessionService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-16T20:20:09.755Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "DTOs.cs",
+              "DocumentMoniker": "E:\\MieRepo\\WargameOnline\\WargameOnline.Api\\WargameOnline.Api\\Models\\DTOs.cs",
+              "RelativeDocumentMoniker": "Models\\DTOs.cs",
+              "ToolTip": "E:\\MieRepo\\WargameOnline\\WargameOnline.Api\\WargameOnline.Api\\Models\\DTOs.cs",
+              "RelativeToolTip": "Models\\DTOs.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-16T20:43:01.636Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
               "Title": "UsersController.cs",
               "DocumentMoniker": "E:\\MieRepo\\WargameOnline\\WargameOnline.Api\\WargameOnline.Api\\Controllers\\UsersController.cs",
               "RelativeDocumentMoniker": "Controllers\\UsersController.cs",
@@ -191,20 +259,20 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 14,
               "Title": "User.cs",
               "DocumentMoniker": "E:\\MieRepo\\WargameOnline\\WargameOnline.Api\\WargameOnline.Api\\Models\\User.cs",
               "RelativeDocumentMoniker": "Models\\User.cs",
               "ToolTip": "E:\\MieRepo\\WargameOnline\\WargameOnline.Api\\WargameOnline.Api\\Models\\User.cs",
               "RelativeToolTip": "Models\\User.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAqwAgAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAA6wAgAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-06-16T20:19:15.859Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 12,
               "Title": "AuthController.cs",
               "DocumentMoniker": "E:\\MieRepo\\WargameOnline\\WargameOnline.Api\\WargameOnline.Api\\Controllers\\AuthController.cs",
               "RelativeDocumentMoniker": "Controllers\\AuthController.cs",
@@ -217,7 +285,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 15,
               "Title": "Match.cs",
               "DocumentMoniker": "E:\\MieRepo\\WargameOnline\\WargameOnline.Api\\WargameOnline.Api\\Models\\Match.cs",
               "RelativeDocumentMoniker": "Models\\Match.cs",
@@ -230,7 +298,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 12,
+              "DocumentIndex": 16,
               "Title": "Army.cs",
               "DocumentMoniker": "E:\\MieRepo\\WargameOnline\\WargameOnline.Api\\WargameOnline.Api\\Models\\Army.cs",
               "RelativeDocumentMoniker": "Models\\Army.cs",
@@ -243,7 +311,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 13,
+              "DocumentIndex": 17,
               "Title": "ArmyController.cs",
               "DocumentMoniker": "E:\\MieRepo\\WargameOnline\\WargameOnline.Api\\WargameOnline.Api\\Controllers\\ArmyController.cs",
               "RelativeDocumentMoniker": "Controllers\\ArmyController.cs",
@@ -256,7 +324,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 14,
+              "DocumentIndex": 18,
               "Title": "GameController.cs",
               "DocumentMoniker": "E:\\MieRepo\\WargameOnline\\WargameOnline.Api\\WargameOnline.Api\\Controllers\\GameController.cs",
               "RelativeDocumentMoniker": "Controllers\\GameController.cs",

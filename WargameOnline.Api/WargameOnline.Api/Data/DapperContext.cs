@@ -7,6 +7,7 @@ namespace WargameOnline.Api.Data
     {
         private readonly IConfiguration _config;
         public DapperContext(IConfiguration config) => _config = config;
+
         public IDbConnection Create() =>
             new SqliteConnection(_config.GetConnectionString("Default"));
     }
