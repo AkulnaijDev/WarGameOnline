@@ -47,6 +47,8 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddSingleton<AuthService>();
 builder.Services.AddSingleton<DapperContext>();
 builder.Services.AddSingleton<IOnlineUserTracker, InMemoryOnlineUserTracker>();
+builder.Services.AddSignalR();
+
 
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -78,6 +80,8 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseCors();
@@ -89,6 +93,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapControllers();
+app.MapHub<FriendsHub>("/hub/friends");
 app.MapGet("/", () => "Wargame API attiva!");
 
 app.Run();

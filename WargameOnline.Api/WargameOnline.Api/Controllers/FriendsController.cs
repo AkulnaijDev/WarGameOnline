@@ -39,6 +39,8 @@ namespace WargameOnline.Api.Controllers
                 return Conflict("Richiesta già inviata o utenti già amici");
 
             await _friends.SendRequestAsync(currentId, targetUser.Id);
+            Console.WriteLine($"Richiesta a username: {dto.Username}");
+
             return Ok("Richiesta inviata");
         }
 

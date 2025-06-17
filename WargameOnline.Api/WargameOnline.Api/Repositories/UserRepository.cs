@@ -44,10 +44,14 @@ namespace WargameOnline.Api.Repositories
 
         public async Task<User?> GetByUsernameAsync(string username)
         {
-            const string query = "SELECT * FROM Users WHERE Username = @Username";
-            using var conn = new SqliteConnection(_conn);
+            const string query = "SELECT * FROM Users WHERE LOWER(Username) = LOWER(@Username)";
+
+            using var conn = _context.Create();
+            Console.WriteLine("Query username per: " + username);
+
             return await conn.QuerySingleOrDefaultAsync<User>(query, new { Username = username });
         }
+
 
     }
 
