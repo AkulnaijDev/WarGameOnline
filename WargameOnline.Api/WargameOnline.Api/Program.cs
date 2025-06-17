@@ -4,6 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using WargameOnline.Api.Data;
 using WargameOnline.Api.Repositories;
 using Microsoft.OpenApi.Models;
+using WargameOnline.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,9 +44,14 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 
-builder.Services.AddSingleton<DapperContext>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddSingleton<AuthService>();
+builder.Services.AddSingleton<DapperContext>();
+builder.Services.AddSingleton<IOnlineUserTracker, InMemoryOnlineUserTracker>();
+
+
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IFriendRepository, FriendRepository>();
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(opt =>
     {

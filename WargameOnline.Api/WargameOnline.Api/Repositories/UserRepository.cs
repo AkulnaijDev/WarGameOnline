@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using Microsoft.Data.Sqlite;
 using WargameOnline.Api.Data;
 
 namespace WargameOnline.Api.Repositories
@@ -8,6 +9,8 @@ namespace WargameOnline.Api.Repositories
         Task<User?> GetByEmailAsync(string email);
         Task<User?> GetByIdAsync(int id);
         Task AddAsync(User user);
+        Task<User?> GetByUsernameAsync(string username);
+
     }
 
     public class UserRepository : IUserRepository
@@ -38,6 +41,14 @@ namespace WargameOnline.Api.Repositories
             using var conn = _context.Create();
             await conn.ExecuteAsync(query, user);
         }
+
+        public async Task<User?> GetByUsernameAsync(string username)
+        {
+            const string query = "SELECT * FROM Users WHERE Username = @Username";
+            using var conn = new SqliteConnection(_conn);
+            return await conn.QuerySingleOrDefaultAsync<User>(query, new { Username = username });
+        }
+
     }
 
 }
