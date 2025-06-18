@@ -3,12 +3,12 @@
   "WorkspaceRootPath": "E:\\MieRepo\\WargameOnline\\WargameOnline.Api\\WargameOnline.Api\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{E5FDCC3C-6A95-4B88-357C-F18259C4AB16}|WargameOnline.Api.csproj|e:\\mierepo\\wargameonline\\wargameonline.api\\wargameonline.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{E5FDCC3C-6A95-4B88-357C-F18259C4AB16}|WargameOnline.Api.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{E5FDCC3C-6A95-4B88-357C-F18259C4AB16}|WargameOnline.Api.csproj|e:\\mierepo\\wargameonline\\wargameonline.api\\wargameonline.api\\hubs\\friendshub.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{E5FDCC3C-6A95-4B88-357C-F18259C4AB16}|WargameOnline.Api.csproj|solutionrelative:hubs\\friendshub.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E5FDCC3C-6A95-4B88-357C-F18259C4AB16}|WargameOnline.Api.csproj|e:\\mierepo\\wargameonline\\wargameonline.api\\wargameonline.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E5FDCC3C-6A95-4B88-357C-F18259C4AB16}|WargameOnline.Api.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{E5FDCC3C-6A95-4B88-357C-F18259C4AB16}|WargameOnline.Api.csproj|e:\\mierepo\\wargameonline\\wargameonline.api\\wargameonline.api\\services\\inmemoryonlineusertracker.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -110,17 +110,17 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 9,
+          "SelectedChildIndex": 0,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
               "Title": "FriendsHub.cs",
               "DocumentMoniker": "E:\\MieRepo\\WargameOnline\\WargameOnline.Api\\WargameOnline.Api\\Hubs\\FriendsHub.cs",
               "RelativeDocumentMoniker": "Hubs\\FriendsHub.cs",
               "ToolTip": "E:\\MieRepo\\WargameOnline\\WargameOnline.Api\\WargameOnline.Api\\Hubs\\FriendsHub.cs",
               "RelativeToolTip": "Hubs\\FriendsHub.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAACgAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAsAAAAAAAAAAAAuwC8AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-06-17T19:32:04.519Z",
               "EditorCaption": ""
@@ -227,13 +227,13 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "Program.cs",
               "DocumentMoniker": "E:\\MieRepo\\WargameOnline\\WargameOnline.Api\\WargameOnline.Api\\Program.cs",
               "RelativeDocumentMoniker": "Program.cs",
               "ToolTip": "E:\\MieRepo\\WargameOnline\\WargameOnline.Api\\WargameOnline.Api\\Program.cs",
               "RelativeToolTip": "Program.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAdAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABgAAAAfAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-06-16T20:17:03.053Z",
               "EditorCaption": ""

@@ -25,6 +25,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setIsAuthenticated(false)
     localStorage.removeItem('auth')
     localStorage.removeItem('token')
+    window.connection?.stop()
   }
 
   return (

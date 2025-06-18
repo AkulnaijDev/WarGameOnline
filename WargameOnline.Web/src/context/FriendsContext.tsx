@@ -5,7 +5,9 @@ import {
   useEffect,
   ReactNode,
 } from 'react'
-import { useSocket } from '../hooks/useSocket'
+
+import { initializeSocket } from '../hooks/useSocket'
+
 
 type Friend = {
   id: number
@@ -86,27 +88,37 @@ export const FriendsProvider = ({ children }: { children: ReactNode }) => {
   }
 
   // ⚡️ Gestione messaggi e connessioni SignalR
-  useSocket(
-    (fromId, text) => {
-      const newMsg = {
-        text,
-        senderId: fromId,
-        timestamp: new Date().toISOString(),
-      }
+  useEffect(() => {
+    if (!token || !currentUserId) return
 
-      setMessages((prev) => ({
-        ...prev,
-        [fromId]: [...(prev[fromId] || []), newMsg],
-      }))
+    initializeSocket(
+      token,
+      (fromId, text) => {
+        const newMsg = {
+          text,
+          senderId: fromId,
+          timestamp: new Date().toISOString(),
+        }
 
-      setActiveChat((prev) =>
-        !prev || prev.id !== fromId
-          ? friends.find((f) => f.id === fromId) || null
-          : prev
-      )
-    },
-    updateOnlineStatus // 👈 callback per FriendOnline/FriendOffline
-  )
+        setMessages((prev) => ({
+          ...prev,
+          [fromId]: [...(prev[fromId] || []), newMsg],
+        }))
+
+        setActiveChat((prev) => {
+          if (prev && prev.id === fromId) return prev
+          const sender = friends.find((f) => f.id === fromId)
+          if (sender) return sender
+
+          // 🔁 fallback: crea un amico temporaneo se sconosciuto
+          return { id: fromId, username: `User#${fromId}`, isOnline: true }
+        })
+
+      },
+      updateOnlineStatus
+    )
+  }, [token, currentUserId, friends])
+
 
   const openChat = (friend: Friend) => setActiveChat(friend)
   const closeChat = () => setActiveChat(null)
