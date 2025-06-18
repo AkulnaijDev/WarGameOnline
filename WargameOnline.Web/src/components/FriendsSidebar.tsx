@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useFriends } from '../context/FriendsContext'
+import { useTranslation } from 'react-i18next'
+
 
 type PendingUser = {
   id: number
@@ -7,12 +9,13 @@ type PendingUser = {
 }
 
 export default function FriendsSidebar() {
-  const { friends, openChat, pendingCount } = useFriends()
+  const { friends, openChat } = useFriends()
   const [username, setUsername] = useState('')
   const [feedback, setFeedback] = useState('')
   const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([])
-
+  const { t } = useTranslation()
   const token = localStorage.getItem('token')
+  const pendingCount = pendingUsers.length
 
   // 🔄 Carica richieste ricevute
   const fetchPendingUsers = async () => {
@@ -73,19 +76,20 @@ export default function FriendsSidebar() {
   }
 
   const handleRemove = async (id: number) => {
-  const token = localStorage.getItem('token')
-  if (!token) return
+    const token = localStorage.getItem('token')
+    if (!token) return
 
-  await fetch(`https://localhost:5103/api/friends/${id}`, {
-    method: 'DELETE',
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
+    await fetch(`https://localhost:5103/api/friends/${id}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
 
-  // aggiorna manualmente la lista dopo
-  fetchPendingUsers()
-}
+    // aggiorna manualmente la lista dopo
+    fetchPendingUsers()
+  }
+
 
   return (
     <div className="fixed bottom-4 right-4 w-72 bg-slate-800 border border-slate-600 rounded-xl shadow-xl text-sm z-50">
@@ -98,7 +102,7 @@ export default function FriendsSidebar() {
         )}
       </div>
 
-      
+
       {/* 📨 Richieste ricevute */}
       {pendingUsers.length > 0 && (
         <div className="px-3 py-2 border-b border-slate-600">
@@ -131,28 +135,34 @@ export default function FriendsSidebar() {
       <ul className="p-2 max-h-64 overflow-y-auto">
         {friends.map((friend) => (
           <li key={friend.id} className="flex justify-between items-center mb-2">
-            <span className="flex items-center gap-2 text-white">
-              <span className={`h-2 w-2 rounded-full ${
-                friend.isOnline ? 'bg-green-400' : 'bg-gray-500'
-              }`} />
-              {friend.username}
-            </span>
+            <div className="flex items-center justify-between">
+              <span className="flex items-center gap-2">
+                <span
+                  className={`h-2 w-2 rounded-full ${friend.isOnline ? 'bg-green-500' : 'bg-gray-400'
+                    }`}
+                />
+                {friend.username}
+              </span>
 
-            <button
-              onClick={() => openChat(friend)}
-               title="Apri chat"
-              className="text-indigo-400 hover:underline"
-            >
-              ✉️
-            </button>
+              <div className="flex items-center gap-2 text-sm">
+                <button
+                  onClick={() => openChat(friend)}
+                  title={t('openChat')} // 🔄 localizzabile da i18n
+                  className="hover:text-blue-400 transition"
+                >
+                  ✉️
+                </button>
 
-            <button
-              className="text-xs text-red-400 hover:text-red-600 ml-2"
-               title="Rimuovi amico"
-              onClick={() => handleRemove(friend.id)}
-            >
-              ❌
-            </button>
+                <button
+                  onClick={() => handleRemove(friend.id)}
+                  title={t('removeFriend')} // 🔄 localizzabile da i18n
+                  className="hover:text-red-400 transition"
+                >
+                  ❌
+                </button>
+              </div>
+            </div>
+
 
           </li>
         ))}

@@ -83,12 +83,5 @@ public class FriendsController : ControllerBase
         return Ok(result);
     }
 
-    [HttpDelete("{id}")]
-    [Authorize]
-    public async Task<IActionResult> RemoveFriend(int id)
-    {
-        var currentId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-        await _friends.RemoveFriendshipAsync(currentId, id);
-        return Ok();
-    }
+
 }

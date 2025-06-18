@@ -1,32 +1,42 @@
-import { HubConnectionBuilder } from '@microsoft/signalr'
-import { useEffect } from 'react'
+import { HubConnectionBuilder, HubConnection } from '@microsoft/signalr'
 
-export function useSocket(onMessage: (from: number, text: string) => void) {
-  useEffect(() => {
+declare global {
+  interface Window {
+    connection?: HubConnection
+  }
+}
+
+let connection: HubConnection | null = null
+
+export function useSocket(
+  onMessage: (from: number, text: string) => void,
+  onStatusChange?: (id: number, online: boolean) => void
+) {
+  if (typeof window === 'undefined') return // ⛔ no SSR
+
+  if (!connection) {
     const token = localStorage.getItem('token')
-    const conn = new HubConnectionBuilder()
+    if (!token) return
+
+    connection = new HubConnectionBuilder()
       .withUrl('https://localhost:5103/hub/friends', {
-        accessTokenFactory: () => token!,
+        accessTokenFactory: () => token,
       })
       .withAutomaticReconnect()
       .build()
 
-    conn.start()
+    window.connection = connection
 
-    conn.on('FriendOnline', (userId) => {
-      console.log('🟢 Amico online:', userId)
-    })
-
-    conn.on('FriendOffline', (userId) => {
-      console.log('🔴 Amico offline:', userId)
-    })
-
-    conn.on('ReceiveMessage', (fromId, text) => {
+    connection.on('FriendOnline', (id) => onStatusChange?.(id, true))
+    connection.on('FriendOffline', (id) => onStatusChange?.(id, false))
+    connection.on('ReceiveMessage', (fromId, text) => {
       onMessage(fromId, text)
     })
 
-    return () => {
-      conn.stop()
-    }
-  }, [onMessage])
+
+    connection
+      .start()
+      .then(() => console.log('🛰️ SignalR connesso'))
+      .catch((err) => console.error('❌ Connessione SignalR fallita:', err))
+  }
 }

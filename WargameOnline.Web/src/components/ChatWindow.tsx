@@ -1,83 +1,98 @@
-import { useEffect, useState, useRef } from 'react'
-import { HubConnectionBuilder, HubConnection } from '@microsoft/signalr'
+import { useEffect, useRef, useState } from 'react'
 import { useFriends } from '../context/FriendsContext'
+import { useTranslation } from 'react-i18next'
 
 export default function ChatWindow() {
-  const { activeChat, closeChat } = useFriends()
-  const [messages, setMessages] = useState<string[]>([])
-  const [text, setText] = useState('')
-  const connectionRef = useRef<HubConnection | null>(null)
+  const { activeChat, closeChat, messages, setMessages, currentUserId } = useFriends()
+  const { t } = useTranslation()
+  const [input, setInput] = useState('')
+  const bottomRef = useRef<HTMLDivElement>(null)
 
-  // 🔗 Avvio SignalR client
   useEffect(() => {
-    const token = localStorage.getItem('token')
-    if (!token) return
-
-    const conn = new HubConnectionBuilder()
-      .withUrl('https://localhost:5103/hub/friends', {
-        accessTokenFactory: () => token!,
-      })
-      .withAutomaticReconnect()
-      .build()
-
-    conn.start()
-    connectionRef.current = conn
-
-    conn.on('ReceiveMessage', (fromUserId: number, message: string) => {
-      if (fromUserId === activeChat?.id) {
-        setMessages((prev) => [...prev, message])
-      }
-    })
-
-    return () => {
-      conn.stop()
-    }
-  }, [activeChat])
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages, activeChat])
 
   if (!activeChat) return null
 
-  const send = () => {
-    const msg = text.trim()
-    if (!msg || !connectionRef.current) return
+  // Connessione SignalR globale
+  const connection = window.connection // 👈 Assicurati che venga impostata globalmente!
 
-    // 🔽 Visualizza subito il messaggio localmente
-    setMessages([...messages, msg])
-    setText('')
+  const handleSend = (e: React.FormEvent) => {
+    e.preventDefault()
+    const trimmed = input.trim()
+    if (!trimmed) return
 
-    // 🔼 Invia via SignalR
-    connectionRef.current.invoke('SendMessage', activeChat.id, msg).catch(console.error)
+    const msg = {
+      text: trimmed,
+      senderId: currentUserId,
+      timestamp: new Date().toISOString(),
+    }
+
+    // Aggiunta locale
+    setMessages((prev) => ({
+      ...prev,
+      [activeChat.id]: [...(prev[activeChat.id] || []), msg],
+    }))
+
+    // Invia tramite SignalR
+    connection?.invoke('SendMessage', activeChat.id, trimmed)
+
+    setInput('')
   }
 
   return (
-    <div className="fixed bottom-4 right-72 w-64 bg-gray-900 text-white p-3 rounded-lg shadow-lg z-50 border border-slate-600">
-      <div className="flex justify-between items-center mb-2 border-b border-slate-600 pb-1">
-        <h4 className="font-semibold">{activeChat.username}</h4>
+    <div className="fixed bottom-4 right-4 w-80 max-h-[70vh] bg-surface border border-border rounded-md shadow-lg flex flex-col z-50">
+      <div className="flex justify-between items-center p-3 border-b border-border">
+        <h3 className="font-semibold">{activeChat.username}</h3>
         <button
           onClick={closeChat}
-          className="text-slate-400 hover:text-white text-sm"
+          className="text-sm text-red-400 hover:text-red-600 transition"
+          title={t('closeChat')}
         >
-          ✕
+          ✖
         </button>
       </div>
-      <div className="bg-slate-800 h-40 overflow-y-auto p-2 text-sm mb-2 rounded">
-        {messages.map((m, i) => (
-          <div key={i} className="mb-1">{m}</div>
-        ))}
+
+      <div className="flex-1 overflow-y-auto p-3 space-y-2 bg-background">
+        {messages[activeChat.id]?.map((msg, i) => {
+          const isMine = msg.senderId === currentUserId
+          const time = new Date(msg.timestamp).toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit',
+          })
+
+          return (
+            <div
+              key={i}
+              className={`flex flex-col max-w-xs text-sm px-3 py-2 rounded-md ${
+                isMine
+                  ? 'bg-blue-100 text-blue-800 self-end'
+                  : 'bg-gray-200 text-gray-800 self-start'
+              }`}
+            >
+              <span>{msg.text}</span>
+              <span className="text-xs text-slate-500 text-right mt-1">{time}</span>
+            </div>
+          )
+        })}
+        <div ref={bottomRef} />
       </div>
-      <div className="flex gap-1">
+
+      {/* ✏️ Input messaggio */}
+      <form onSubmit={handleSend} className="p-2 border-t border-border bg-background flex gap-2">
         <input
-          className="flex-1 text-black px-2 py-1 rounded"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && send()}
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder={t('typeMessage')}
+          className="flex-1 px-3 py-1 text-sm rounded bg-white text-black"
         />
         <button
-          onClick={send}
-          className="text-sm px-2 py-1 bg-indigo-600 rounded text-white hover:bg-indigo-500"
+          type="submit"
+          className="bg-indigo-600 text-white text-sm px-3 py-1 rounded hover:bg-indigo-500 transition"
         >
-          Invia
+          {t('send')}
         </button>
-      </div>
+      </form>
     </div>
   )
 }

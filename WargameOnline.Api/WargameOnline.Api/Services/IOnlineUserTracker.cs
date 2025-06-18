@@ -1,11 +1,7 @@
-﻿namespace WargameOnline.Api.Services
+﻿public interface IOnlineUserTracker
 {
-    public interface IOnlineUserTracker
-    {
-        void SetOnline(int userId);
-        void SetOffline(int userId);
-        bool IsOnline(int userId);
-        IEnumerable<int> GetOnlineUserIds();
-    }
-
+    void SetOnline(int userId, string connectionId);
+    void RemoveConnection(int userId, string connectionId);
+    bool IsOnline(int userId);
+    bool TryGetConnections(int userId, out HashSet<string> connections);
 }

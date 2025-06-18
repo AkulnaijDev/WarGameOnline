@@ -1,15 +1,8 @@
 ﻿using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
-using WargameOnline.Api.Services;
 
-namespace WargameOnline.Api.Hubs;
-
-[Authorize]
 public class FriendsHub : Hub
 {
-    private static readonly Dictionary<int, string> OnlineUsers = new();
-
     private readonly IOnlineUserTracker _tracker;
 
     public FriendsHub(IOnlineUserTracker tracker)
@@ -19,43 +12,38 @@ public class FriendsHub : Hub
 
     public override async Task OnConnectedAsync()
     {
-        var userIdClaim = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-        if (int.TryParse(userIdClaim, out int userId))
-        {
-            OnlineUsers[userId] = Context.ConnectionId;
-            _tracker.SetOnline(userId); // 👈 fondamentale
-            Console.WriteLine($"🟢 Connessione: utente {userId} → {Context.ConnectionId}");
-
-            await Clients.Others.SendAsync("FriendOnline", userId);
-        }
-
+        var userId = int.Parse(Context.User!.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+        _tracker.SetOnline(userId, Context.ConnectionId);
+        await Clients.Others.SendAsync("FriendOnline", userId);
         await base.OnConnectedAsync();
     }
 
-    public override async Task OnDisconnectedAsync(Exception? e)
+    public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        var user = OnlineUsers.FirstOrDefault(p => p.Value == Context.ConnectionId);
-        if (user.Key != 0)
-        {
-            OnlineUsers.Remove(user.Key);
-            _tracker.SetOffline(user.Key); // 👈 fondamentale
-            Console.WriteLine($"⛔ Disconnessione: utente {user.Key}");
-
-            await Clients.Others.SendAsync("FriendOffline", user.Key);
-        }
-
-        await base.OnDisconnectedAsync(e);
+        var userId = int.Parse(Context.User!.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+        _tracker.RemoveConnection(userId, Context.ConnectionId);
+        await Clients.Others.SendAsync("FriendOffline", userId);
+        await base.OnDisconnectedAsync(exception);
     }
 
     public async Task SendMessage(int toUserId, string message)
     {
-        var fromIdClaim = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (!int.TryParse(fromIdClaim, out int fromUserId)) return;
+        var fromUserId = int.Parse(Context.User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
-        if (OnlineUsers.TryGetValue(toUserId, out var targetConnId))
+        Console.WriteLine($"📨 {fromUserId} ➡️ {toUserId}: {message}");
+
+        if (_tracker.TryGetConnections(toUserId, out var connections))
         {
-            await Clients.Client(targetConnId).SendAsync("ReceiveMessage", fromUserId, message);
+            Console.WriteLine($"📡 Inoltro a: {string.Join(", ", connections)}");
+            foreach (var conn in connections)
+            {
+                await Clients.Client(conn).SendAsync("ReceiveMessage", fromUserId, message);
+            }
+        }
+        else
+        {
+            Console.WriteLine($"❌ Nessuna connessione trovata per {toUserId}");
         }
     }
+
 }

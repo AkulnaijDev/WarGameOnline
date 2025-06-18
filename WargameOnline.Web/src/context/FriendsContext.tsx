@@ -5,6 +5,7 @@ import {
   useEffect,
   ReactNode,
 } from 'react'
+import { useSocket } from '../hooks/useSocket'
 
 type Friend = {
   id: number
@@ -12,12 +13,20 @@ type Friend = {
   isOnline: boolean
 }
 
+type Message = {
+  text: string
+  senderId: number
+  timestamp: string
+}
+
 type FriendsContextType = {
   friends: Friend[]
   activeChat: Friend | null
-  pendingCount: number
   openChat: (f: Friend) => void
   closeChat: () => void
+  messages: { [userId: number]: Message[] }
+  setMessages: React.Dispatch<React.SetStateAction<{ [userId: number]: Message[] }>>
+  currentUserId: number
 }
 
 const FriendsContext = createContext<FriendsContextType | undefined>(undefined)
@@ -25,58 +34,40 @@ const FriendsContext = createContext<FriendsContextType | undefined>(undefined)
 export const FriendsProvider = ({ children }: { children: ReactNode }) => {
   const [friends, setFriends] = useState<Friend[]>([])
   const [activeChat, setActiveChat] = useState<Friend | null>(null)
-  const [pendingCount, setPendingCount] = useState(0)
+  const [messages, setMessages] = useState<{ [userId: number]: Message[] }>({})
   const [token, setToken] = useState<string | null>(null)
+  const [currentUserId, setCurrentUserId] = useState<number>(0)
 
-  // Legge il token all’avvio
+  // 🔐 Leggi token e ID utente
   useEffect(() => {
-    const stored = localStorage.getItem('token')
-    setToken(stored)
+    const t = localStorage.getItem('token')
+    if (!t) return
+    setToken(t)
 
-    const handleStorage = () => {
-      const updated = localStorage.getItem('token')
-      setToken(updated)
+    try {
+      const payload = JSON.parse(atob(t.split('.')[1]))
+      const idClaim = payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier']
+      setCurrentUserId(parseInt(idClaim))
+    } catch (err) {
+      console.error('Errore parsing JWT:', err)
     }
-
-    window.addEventListener('storage', handleStorage)
-    return () => window.removeEventListener('storage', handleStorage)
   }, [])
 
-  // Reset se logout
-  useEffect(() => {
-    if (!token) {
-      setFriends([])
-      setPendingCount(0)
-      setActiveChat(null)
-    }
-  }, [token])
-
-  // Fetch amici se loggato
+  // 🔁 Carica amici alla login
   useEffect(() => {
     if (!token) return
 
     const fetchFriends = async () => {
       try {
-        const [friendsRes, pendingRes] = await Promise.all([
-          fetch('https://localhost:5103/api/friends', {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-          fetch('https://localhost:5103/api/friends/pending', {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-        ])
-
-        if (friendsRes.ok) {
-          const friends = await friendsRes.json()
-          setFriends(friends)
-        }
-
-        if (pendingRes.ok) {
-          const pending = await pendingRes.json()
-          setPendingCount(pending.length)
+        const res = await fetch('https://localhost:5103/api/friends', {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        if (res.ok) {
+          const data = await res.json()
+          setFriends(data)
         }
       } catch (err) {
-        console.error('Errore durante il fetch amici:', err)
+        console.error('Errore fetching amici:', err)
       }
     }
 
@@ -85,20 +76,52 @@ export const FriendsProvider = ({ children }: { children: ReactNode }) => {
     return () => clearInterval(interval)
   }, [token])
 
-  const openChat = (f: Friend) => setActiveChat(f)
-  const closeChat = () => setActiveChat(null)
-
-  if (!token) {
-    return (
-      <div className="text-sm text-slate-400 px-4 py-2">
-        Effettua il login per accedere alla lista amici
-      </div>
+  // ✅ Aggiorna stato online
+  const updateOnlineStatus = (id: number, online: boolean) => {
+    setFriends(prev =>
+      prev.map(f =>
+        f.id === id ? { ...f, isOnline: online } : f
+      )
     )
   }
 
+  // ⚡️ Gestione messaggi e connessioni SignalR
+  useSocket(
+    (fromId, text) => {
+      const newMsg = {
+        text,
+        senderId: fromId,
+        timestamp: new Date().toISOString(),
+      }
+
+      setMessages((prev) => ({
+        ...prev,
+        [fromId]: [...(prev[fromId] || []), newMsg],
+      }))
+
+      setActiveChat((prev) =>
+        !prev || prev.id !== fromId
+          ? friends.find((f) => f.id === fromId) || null
+          : prev
+      )
+    },
+    updateOnlineStatus // 👈 callback per FriendOnline/FriendOffline
+  )
+
+  const openChat = (friend: Friend) => setActiveChat(friend)
+  const closeChat = () => setActiveChat(null)
+
   return (
     <FriendsContext.Provider
-      value={{ friends, activeChat, pendingCount, openChat, closeChat }}
+      value={{
+        friends,
+        activeChat,
+        openChat,
+        closeChat,
+        messages,
+        setMessages,
+        currentUserId,
+      }}
     >
       {children}
     </FriendsContext.Provider>

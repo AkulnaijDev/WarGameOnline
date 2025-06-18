@@ -6,7 +6,6 @@ using WargameOnline.Api.Repositories;
 using Microsoft.OpenApi.Models;
 using WargameOnline.Api.Services;
 using System.Security.Claims;
-using WargameOnline.Api.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
