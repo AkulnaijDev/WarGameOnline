@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useFriends } from '../context/FriendsContext'
 import { useTranslation } from 'react-i18next'
+import { useLocation } from 'react-router-dom'
 
 
 type PendingUser = {
@@ -16,6 +17,9 @@ export default function FriendsSidebar() {
   const { t } = useTranslation()
   const token = localStorage.getItem('token')
   const pendingCount = pendingUsers.length
+  const location = useLocation()
+  const isAuth = location.pathname.startsWith('/auth')
+
 
   // 🔄 Carica richieste ricevute
   const fetchPendingUsers = async () => {
@@ -92,7 +96,7 @@ export default function FriendsSidebar() {
 
 
   return (
-    <div className="fixed bottom-4 right-4 w-72 bg-slate-800 border border-slate-600 rounded-xl shadow-xl text-sm z-50">
+    <div className={`fixed bottom-4 right-4 w-72 bg-slate-800 border border-slate-600 rounded-xl shadow-xl text-sm z-50 ${isAuth ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
       <div className="flex justify-center items-center px-3 py-2 border-b border-slate-600 relative">
         <h3 className="font-semibold text-white tracking-wide text-xs">AMICI</h3>
         {pendingCount > 0 && (
@@ -141,6 +145,7 @@ export default function FriendsSidebar() {
             <span className="flex items-center gap-2 text-white">
               <span
                 className={`h-2 w-2 rounded-full ${friend.isOnline ? 'bg-green-500' : 'bg-gray-400'}`}
+                title={`${friend.isOnline ? t('online') : t('offline')}`}
               />
               {friend.username}
             </span>
@@ -168,7 +173,7 @@ export default function FriendsSidebar() {
 
       {/* ➕ Aggiungi amico */}
       <div className="p-2 border-t border-slate-700"></div>
-     <div className="flex items-center gap-2 mb-1 px-2">
+      <div className="flex items-center gap-2 mb-1 px-2">
 
         <input
           value={username}
@@ -178,14 +183,26 @@ export default function FriendsSidebar() {
         />
         <button
           onClick={handleAdd}
+          title={t('addFriend')}
           className="text-xs bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-500"
         >
-          ➕ 
+          ➕
         </button>
-        {feedback && <p className="text-xs text-white">{feedback}</p>}
+
 
       </div>
+      {feedback && (
+        <p
+  className={`mt-1 mr-1 mb-1 ml-1 px-2 py-1 text-xs rounded ${
+    feedback.startsWith('✅')
+      ? 'bg-green-800 text-green-300'
+      : 'bg-red-800 text-red-300'
+  }`}
+>
+  {feedback}
+</p>
 
+      )}
     </div>
   )
 }

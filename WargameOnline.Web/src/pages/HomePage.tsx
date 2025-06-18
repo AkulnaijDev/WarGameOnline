@@ -43,7 +43,7 @@ export default function HomePage() {
       </aside>
 
       <main className="flex-1 p-6">
-        <h1 className="text-2xl font-semibold mb-4">Benvenuto nella Home {username && `, ${username}`}</h1>
+        <h1 className="text-2xl font-semibold mb-4">{username && `${username}`} - Benvenuto nella Home </h1>
         <p className="text-gray-300">Qui troverai tutte le funzionalità principali del gioco.</p>
       </main>
     </div>
