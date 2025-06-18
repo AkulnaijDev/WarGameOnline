@@ -13,9 +13,14 @@ public class FriendsHub : Hub
     public override async Task OnConnectedAsync()
     {
         var userId = int.Parse(Context.User!.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+        Console.WriteLine($"🔌 OnConnected {userId} via {Context.ConnectionId}");
+
         _tracker.SetOnline(userId, Context.ConnectionId);
         await Clients.Others.SendAsync("FriendOnline", userId);
         await base.OnConnectedAsync();
+        Console.WriteLine($"🧲 Connected {userId} via {Context.ConnectionId}");
+
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)

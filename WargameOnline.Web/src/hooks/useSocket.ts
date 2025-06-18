@@ -8,6 +8,12 @@ declare global {
 
 let connection: HubConnection | null = null
 
+export function resetSocket() {
+  connection?.stop()
+  connection = null
+  window.connection = undefined
+}
+
 export function initializeSocket(
   token: string,
   onMessage: (from: number, text: string) => void,

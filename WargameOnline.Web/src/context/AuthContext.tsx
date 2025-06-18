@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react'
+import { resetSocket } from '../hooks/useSocket'
 
 type AuthContextType = {
   isAuthenticated: boolean
@@ -23,9 +24,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = () => {
     setIsAuthenticated(false)
+    resetSocket()
     localStorage.removeItem('auth')
     localStorage.removeItem('token')
     window.connection?.stop()
+    window.connection = undefined
   }
 
   return (

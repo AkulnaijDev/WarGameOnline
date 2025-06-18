@@ -13,6 +13,8 @@
                 _connections[userId] = set;
             }
             set.Add(connectionId);
+            Console.WriteLine($"🧩 Tracker set: {userId} → {connectionId}");
+
         }
     }
 
