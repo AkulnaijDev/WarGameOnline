@@ -28,11 +28,30 @@ export const FriendsProvider = ({ children }: { children: ReactNode }) => {
   const [pendingCount, setPendingCount] = useState(0)
   const [token, setToken] = useState<string | null>(null)
 
+  // Legge il token all’avvio
   useEffect(() => {
     const stored = localStorage.getItem('token')
     setToken(stored)
+
+    const handleStorage = () => {
+      const updated = localStorage.getItem('token')
+      setToken(updated)
+    }
+
+    window.addEventListener('storage', handleStorage)
+    return () => window.removeEventListener('storage', handleStorage)
   }, [])
 
+  // Reset se logout
+  useEffect(() => {
+    if (!token) {
+      setFriends([])
+      setPendingCount(0)
+      setActiveChat(null)
+    }
+  }, [token])
+
+  // Fetch amici se loggato
   useEffect(() => {
     if (!token) return
 
@@ -47,16 +66,15 @@ export const FriendsProvider = ({ children }: { children: ReactNode }) => {
           }),
         ])
 
-        if (!friendsRes.ok || !pendingRes.ok) {
-          const text = await friendsRes.text()
-          throw new Error(`Errore API: ${text}`)
+        if (friendsRes.ok) {
+          const friends = await friendsRes.json()
+          setFriends(friends)
         }
 
-        const friends = await friendsRes.json()
-        const pending = await pendingRes.json()
-
-        setFriends(friends)
-        setPendingCount(pending.length)
+        if (pendingRes.ok) {
+          const pending = await pendingRes.json()
+          setPendingCount(pending.length)
+        }
       } catch (err) {
         console.error('Errore durante il fetch amici:', err)
       }
@@ -70,7 +88,6 @@ export const FriendsProvider = ({ children }: { children: ReactNode }) => {
   const openChat = (f: Friend) => setActiveChat(f)
   const closeChat = () => setActiveChat(null)
 
-  // 👇 Mostra un messaggio se l’utente non è loggato
   if (!token) {
     return (
       <div className="text-sm text-slate-400 px-4 py-2">
@@ -88,7 +105,6 @@ export const FriendsProvider = ({ children }: { children: ReactNode }) => {
   )
 }
 
-// Custom hook con controllo automatico
 export const useFriends = () => {
   const context = useContext(FriendsContext)
   if (!context) throw new Error('useFriends deve essere usato dentro FriendsProvider')

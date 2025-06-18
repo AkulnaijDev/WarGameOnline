@@ -1,9 +1,27 @@
 import { useAuth } from '../context/AuthContext'
 import { useTranslation } from 'react-i18next'
+import { jwtDecode } from "jwt-decode"
 
 export default function HomePage() {
   const { logout } = useAuth()
   const { t } = useTranslation()
+
+
+  type JwtPayload = {
+    [key: string]: string
+  }
+
+  const token = localStorage.getItem("token")
+  let username = ""
+
+  if (token) {
+    const payload = jwtDecode<JwtPayload>(token)
+    username =
+      payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] ||
+      payload.name ||
+      'rottoBroken'
+    
+  }
 
   return (
     <div className="min-h-screen flex flex-col sm:flex-row bg-bg text-gray-100">
@@ -25,7 +43,7 @@ export default function HomePage() {
       </aside>
 
       <main className="flex-1 p-6">
-        <h1 className="text-2xl font-semibold mb-4">Benvenuto nella Home</h1>
+        <h1 className="text-2xl font-semibold mb-4">Benvenuto nella Home {username && `, ${username}`}</h1>
         <p className="text-gray-300">Qui troverai tutte le funzionalità principali del gioco.</p>
       </main>
     </div>

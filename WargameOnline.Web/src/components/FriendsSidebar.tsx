@@ -72,6 +72,21 @@ export default function FriendsSidebar() {
     }
   }
 
+  const handleRemove = async (id: number) => {
+  const token = localStorage.getItem('token')
+  if (!token) return
+
+  await fetch(`https://localhost:5103/api/friends/${id}`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+
+  // aggiorna manualmente la lista dopo
+  fetchPendingUsers()
+}
+
   return (
     <div className="fixed bottom-4 right-4 w-72 bg-slate-800 border border-slate-600 rounded-xl shadow-xl text-sm z-50">
       <div className="flex justify-between items-center px-3 py-2 border-b border-slate-600">
@@ -83,23 +98,7 @@ export default function FriendsSidebar() {
         )}
       </div>
 
-      {/* ➕ Aggiungi amico */}
-      <div className="p-2 border-b border-slate-600">
-        <input
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          placeholder="Username (es. Terminator)"
-          className="w-full px-2 py-1 text-sm rounded bg-slate-700 text-white placeholder-slate-400 mb-2"
-        />
-        <button
-          onClick={handleAdd}
-          className="w-full text-xs bg-indigo-600 text-white py-1 rounded hover:bg-indigo-500"
-        >
-          ➕ Aggiungi amico
-        </button>
-        {feedback && <p className="mt-1 text-xs text-white">{feedback}</p>}
-      </div>
-
+      
       {/* 📨 Richieste ricevute */}
       {pendingUsers.length > 0 && (
         <div className="px-3 py-2 border-b border-slate-600">
@@ -138,15 +137,44 @@ export default function FriendsSidebar() {
               }`} />
               {friend.username}
             </span>
+
             <button
               onClick={() => openChat(friend)}
+               title="Apri chat"
               className="text-indigo-400 hover:underline"
             >
-              Chat
+              ✉️
             </button>
+
+            <button
+              className="text-xs text-red-400 hover:text-red-600 ml-2"
+               title="Rimuovi amico"
+              onClick={() => handleRemove(friend.id)}
+            >
+              ❌
+            </button>
+
           </li>
         ))}
       </ul>
+
+      {/* ➕ Aggiungi amico */}
+      <div className="p-2 border-b border-slate-600">
+        <input
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          placeholder="Username (es. Terminator)"
+          className="w-full px-2 py-1 text-sm rounded bg-slate-700 text-white placeholder-slate-400 mb-2"
+        />
+        <button
+          onClick={handleAdd}
+          className="w-full text-xs bg-indigo-600 text-white py-1 rounded hover:bg-indigo-500"
+        >
+          ➕ Aggiungi amico
+        </button>
+        {feedback && <p className="mt-1 text-xs text-white">{feedback}</p>}
+      </div>
+
     </div>
   )
 }

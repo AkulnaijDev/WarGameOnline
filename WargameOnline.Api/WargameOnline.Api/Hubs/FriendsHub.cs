@@ -1,18 +1,35 @@
 ﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using WargameOnline.Api.Services;
 
+namespace WargameOnline.Api.Hubs;
+
+[Authorize]
 public class FriendsHub : Hub
 {
-    private static Dictionary<int, string> OnlineUsers = new();
+    private static readonly Dictionary<int, string> OnlineUsers = new();
+
+    private readonly IOnlineUserTracker _tracker;
+
+    public FriendsHub(IOnlineUserTracker tracker)
+    {
+        _tracker = tracker;
+    }
 
     public override async Task OnConnectedAsync()
     {
-        var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (int.TryParse(userId, out int id))
+        var userIdClaim = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (int.TryParse(userIdClaim, out int userId))
         {
-            OnlineUsers[id] = Context.ConnectionId;
-            await Clients.Others.SendAsync("FriendOnline", id);
+            OnlineUsers[userId] = Context.ConnectionId;
+            _tracker.SetOnline(userId); // 👈 fondamentale
+            Console.WriteLine($"🟢 Connessione: utente {userId} → {Context.ConnectionId}");
+
+            await Clients.Others.SendAsync("FriendOnline", userId);
         }
+
         await base.OnConnectedAsync();
     }
 
@@ -22,17 +39,23 @@ public class FriendsHub : Hub
         if (user.Key != 0)
         {
             OnlineUsers.Remove(user.Key);
+            _tracker.SetOffline(user.Key); // 👈 fondamentale
+            Console.WriteLine($"⛔ Disconnessione: utente {user.Key}");
+
             await Clients.Others.SendAsync("FriendOffline", user.Key);
         }
+
         await base.OnDisconnectedAsync(e);
     }
 
     public async Task SendMessage(int toUserId, string message)
     {
-        if (OnlineUsers.TryGetValue(toUserId, out var connId))
+        var fromIdClaim = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (!int.TryParse(fromIdClaim, out int fromUserId)) return;
+
+        if (OnlineUsers.TryGetValue(toUserId, out var targetConnId))
         {
-            var fromUserId = int.Parse(Context.User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-            await Clients.Client(connId).SendAsync("ReceiveMessage", fromUserId, message);
+            await Clients.Client(targetConnId).SendAsync("ReceiveMessage", fromUserId, message);
         }
     }
 }

@@ -10,6 +10,7 @@ namespace WargameOnline.Api.Repositories
         Task<IEnumerable<User>> GetPendingReceivedAsync(int userId);
         Task<bool> RespondToRequestAsync(int userId, string username, string action);
         Task<IEnumerable<User>> GetAcceptedFriendsAsync(int userId);
+        Task RemoveFriendshipAsync(int userIdA, int userIdB);
     }
 
     public class FriendRepository : IFriendRepository
@@ -81,6 +82,17 @@ namespace WargameOnline.Api.Repositories
               AND u.Id != @userId
         """;
             return await conn.QueryAsync<User>(query, new { userId });
+        }
+
+        public async Task RemoveFriendshipAsync(int a, int b)
+        {
+            using var conn = new SqliteConnection(_conn);
+            const string q = """
+        DELETE FROM Friendships 
+        WHERE (RequesterId = @a AND AddresseeId = @b)
+           OR (RequesterId = @b AND AddresseeId = @a)
+    """;
+            await conn.ExecuteAsync(q, new { a, b });
         }
     }
 

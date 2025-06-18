@@ -5,6 +5,8 @@ using WargameOnline.Api.Data;
 using WargameOnline.Api.Repositories;
 using Microsoft.OpenApi.Models;
 using WargameOnline.Api.Services;
+using System.Security.Claims;
+using WargameOnline.Api.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -56,17 +58,31 @@ builder.Services.AddSingleton<IOnlineUserTracker, InMemoryOnlineUserTracker>();
 
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(opt =>
+    .AddJwtBearer(options =>
     {
-        var key = builder.Configuration["JWT:Key"];
-        opt.TokenValidationParameters = new TokenValidationParameters
+        options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuer = true,
-            ValidIssuer = builder.Configuration["JWT:Issuer"],
-            ValidateAudience = false,
-            ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key!))
+            IssuerSigningKey = new SymmetricSecurityKey(
+    Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JWT__Key")!)
+),
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ClockSkew = TimeSpan.Zero,
+            NameClaimType = ClaimTypes.NameIdentifier // 👈 questo è fondamentale!
+        };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+                var path = context.HttpContext.Request.Path;
+                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hub/friends"))
+                    context.Token = accessToken;
+
+                return Task.CompletedTask;
+            }
         };
     });
 
@@ -84,9 +100,10 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 app.UseRouting();
+app.UseCors("FrontendPolicy");
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseCors("FrontendPolicy");
+
 
 if (app.Environment.IsDevelopment())
 {
