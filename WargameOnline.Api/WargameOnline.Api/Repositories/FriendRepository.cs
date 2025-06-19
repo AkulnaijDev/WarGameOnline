@@ -10,7 +10,7 @@ namespace WargameOnline.Api.Repositories
         Task<IEnumerable<User>> GetPendingReceivedAsync(int userId);
         Task<bool> RespondToRequestAsync(int userId, string username, string action);
         Task<IEnumerable<User>> GetAcceptedFriendsAsync(int userId);
-        Task RemoveFriendshipAsync(int userIdA, int userIdB);
+        Task<bool> RemoveFriendshipAsync(int userIdA, int userIdB);
     }
 
     public class FriendRepository : IFriendRepository
@@ -20,25 +20,34 @@ namespace WargameOnline.Api.Repositories
         public FriendRepository(IConfiguration config) =>
             _conn = config.GetConnectionString("Default");
 
-        public async Task<bool> AlreadyFriendsOrPending(int a, int b)
+        public async Task<bool> AlreadyFriendsOrPending(int user1, int user2)
         {
             using var conn = new SqliteConnection(_conn);
-            const string query = """
-            SELECT 1 FROM Friendships
-            WHERE (RequesterId = @a AND AddresseeId = @b)
-               OR (RequesterId = @b AND AddresseeId = @a)
-        """;
-            return await conn.QueryFirstOrDefaultAsync<int?>(query, new { a, b }) != null;
+
+            var sql = @"SELECT COUNT(1) FROM Friendships
+                WHERE
+                  ((RequesterId = @U1 AND AddresseeId = @U2) OR
+                   (RequesterId = @U2 AND AddresseeId = @U1))
+                  AND Status IN ('Pending', 'Accepted')";
+
+            var exists = await conn.ExecuteScalarAsync<int>(sql, new { U1 = user1, U2 = user2 });
+            return exists > 0;
         }
 
-        public async Task SendRequestAsync(int requesterId, int addresseeId)
+
+        public async Task SendRequestAsync(int senderId, int receiverId)
         {
             using var conn = new SqliteConnection(_conn);
-            const string query = """
-            INSERT INTO Friendships (RequesterId, AddresseeId, Status)
-            VALUES (@requesterId, @addresseeId, 'Pending')
-        """;
-            await conn.ExecuteAsync(query, new { requesterId, addresseeId });
+
+            // Elimina eventuali richieste rifiutate precedenti
+            var delete = @"DELETE FROM Friendships
+                   WHERE RequesterId = @Sender AND AddresseeId = @Receiver AND Status = 'Rejected'";
+            await conn.ExecuteAsync(delete, new { Sender = senderId, Receiver = receiverId });
+
+            // Inserisci nuova richiesta
+            var insert = @"INSERT INTO Friendships (RequesterId, AddresseeId, Status)
+                   VALUES (@Sender, @Receiver, 'Pending')";
+            await conn.ExecuteAsync(insert, new { Sender = senderId, Receiver = receiverId });
         }
 
         public async Task<IEnumerable<User>> GetPendingReceivedAsync(int userId)
@@ -84,16 +93,20 @@ namespace WargameOnline.Api.Repositories
             return await conn.QueryAsync<User>(query, new { userId });
         }
 
-        public async Task RemoveFriendshipAsync(int a, int b)
+        public async Task<bool> RemoveFriendshipAsync(int userId, int friendId)
         {
             using var conn = new SqliteConnection(_conn);
-            const string q = """
-        DELETE FROM Friendships 
-        WHERE (RequesterId = @a AND AddresseeId = @b)
-           OR (RequesterId = @b AND AddresseeId = @a)
-    """;
-            await conn.ExecuteAsync(q, new { a, b });
+
+            var sql = @"DELETE FROM Friendships
+                WHERE 
+                  (RequesterId = @U1 AND AddresseeId = @U2)
+                  OR
+                  (RequesterId = @U2 AND AddresseeId = @U1)";
+
+            var rows = await conn.ExecuteAsync(sql, new { U1 = userId, U2 = friendId });
+            return rows > 0;
         }
+
     }
 
 }

@@ -15,6 +15,11 @@ type Friend = {
   isOnline: boolean
 }
 
+type PendingUser = {
+  id: number
+  username: string
+}
+
 type Message = {
   text: string
   senderId: number
@@ -29,6 +34,8 @@ type FriendsContextType = {
   messages: { [userId: number]: Message[] }
   setMessages: React.Dispatch<React.SetStateAction<{ [userId: number]: Message[] }>>
   currentUserId: number
+  pendingUsers: PendingUser[]
+  setPendingUsers: React.Dispatch<React.SetStateAction<PendingUser[]>>
 }
 
 const FriendsContext = createContext<FriendsContextType | undefined>(undefined)
@@ -51,30 +58,28 @@ export const FriendsProvider = ({
   const [friends, setFriends] = useState<Friend[]>([])
   const [activeChat, setActiveChat] = useState<Friend | null>(null)
   const [messages, setMessages] = useState<{ [userId: number]: Message[] }>({})
+  const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([])
 
-  // 🔁 Carica amici all’avvio
+  // 🔁 Carica amici al login
   useEffect(() => {
-     console.log('🎯 token:', token)
-  console.log('🎯 currentUserId:', currentUserId)
-
     if (!token || !currentUserId) return
 
-  const fetchFriends = async () => {
-    try {
-      console.log('🔁 chiamata a /api/friends in partenza...') // 👈 metti questo
-      const res = await fetch(API.friends, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      if (res.ok) {
-        const data = await res.json()
-        setFriends(data.filter((f: Friend) => f.id !== currentUserId))
-      } else {
-        console.warn('❌ errore nella fetch friends:', res.status)
+    const fetchFriends = async () => {
+      try {
+        console.log('🔁 chiamata a /api/friends in partenza...')
+        const res = await fetch(API.friends, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        if (res.ok) {
+          const data = await res.json()
+          setFriends(data.filter((f: Friend) => f.id !== currentUserId))
+        } else {
+          console.warn('❌ errore nella fetch friends:', res.status)
+        }
+      } catch (err) {
+        console.error('❌ Friends fetching error:', err)
       }
-    } catch (err) {
-      console.error('❌ Friends fetching error:', err)
     }
-  }
 
     fetchFriends()
   }, [token, currentUserId])
@@ -87,6 +92,7 @@ export const FriendsProvider = ({
     )
   }
 
+  // 🔄 Inizializza SignalR
   useEffect(() => {
     if (!token || !currentUserId) return
 
@@ -104,13 +110,40 @@ export const FriendsProvider = ({
           [fromId]: [...(prev[fromId] || []), newMsg],
         }))
 
-        setActiveChat(prev => {
-          if (prev && prev.id === fromId) return prev
-          const sender = friends.find(f => f.id === fromId)
-          return sender ?? { id: fromId, username: `User#${fromId}`, isOnline: true }
-        })
+        const sender = friends.find(f => f.id === fromId)
+
+        if (!sender) {
+          // ⚠️ Se non lo conosci, forza un refresh amici
+          fetch(API.friends, {
+            headers: { Authorization: `Bearer ${token}` }
+          })
+            .then(res => res.json())
+            .then((updated: Friend[]) => {
+              setFriends(updated.filter(f => f.id !== currentUserId))
+              const s = updated.find(f => f.id === fromId)
+              if (s) setActiveChat(s)
+            })
+            .catch(console.error)
+        } else {
+          setActiveChat(prev => {
+            if (prev && prev.id === fromId) return prev
+            return sender
+          })
+        }
+
       },
-      updateOnlineStatus
+      updateOnlineStatus,
+      {
+        onFriendRequestReceived: (pending: PendingUser) => {
+          setPendingUsers(prev => [...prev, pending])
+        },
+        onFriendRequestAccepted: (newFriend: Friend) => {
+          setFriends(prev => [...prev, newFriend])
+        },
+        onFriendRemoved: (removedId) => {
+          setFriends(prev => prev.filter(f => f.id !== removedId))
+        }
+      }
     )
   }, [token, currentUserId, friends])
 
@@ -127,6 +160,8 @@ export const FriendsProvider = ({
         messages,
         setMessages,
         currentUserId,
+        pendingUsers,
+        setPendingUsers,
       }}
     >
       {children}

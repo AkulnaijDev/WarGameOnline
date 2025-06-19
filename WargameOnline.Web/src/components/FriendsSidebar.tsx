@@ -1,48 +1,17 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useFriends } from '../context/FriendsContext'
 import { useAuth } from '../context/AuthContext'
 import { useTranslation } from 'react-i18next'
 import { API } from '../lib/api'
 
-type PendingUser = {
-  id: number
-  username: string
-}
-
-type Friend = {
-  id: number
-  username: string
-  isOnline: boolean
-}
-
 export default function FriendsSidebar() {
-  const { friends, openChat } = useFriends()
+  const { friends, openChat, pendingUsers, setPendingUsers } = useFriends()
   const { token, isAuthenticated } = useAuth()
   const [username, setUsername] = useState('')
   const [feedback, setFeedback] = useState('')
-  const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([])
   const { t } = useTranslation()
 
   const pendingCount = pendingUsers.length
-
-  useEffect(() => {
-    const fetchPendingUsers = async () => {
-      if (!token) return
-      try {
-        const res = await fetch(API.friendsPending, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        const data = await res.json()
-        setPendingUsers(data)
-      } catch {
-        setPendingUsers([])
-      }
-    }
-
-    fetchPendingUsers()
-    const interval = setInterval(fetchPendingUsers, 10000)
-    return () => clearInterval(interval)
-  }, [token])
 
   const handleAdd = async () => {
     if (!username.trim() || !token) return
@@ -81,7 +50,7 @@ export default function FriendsSidebar() {
 
   const handleRemove = async (id: number) => {
     if (!token) return
-    await fetch(`${API.friendsChatHub}/${id}`, {
+    await fetch(`${API.friends}/${id}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` },
     })
@@ -104,7 +73,7 @@ export default function FriendsSidebar() {
         <div className="px-3 py-2 border-b border-slate-600">
           <p className="text-xs text-slate-300 mb-2 font-semibold">{t('arrivedFriendshipRequests')}</p>
           <ul className="space-y-1">
-            {pendingUsers.map(u => (
+            {pendingUsers.map((u) => (
               <li key={u.id} className="flex justify-between items-center">
                 <span className="text-white">{u.username}</span>
                 <div className="flex gap-1">
@@ -128,7 +97,7 @@ export default function FriendsSidebar() {
       )}
 
       <ul className="p-2 max-h-40 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-transparent">
-        {friends.map((friend: Friend) => (
+        {friends.map((friend) => (
           <li key={friend.id} className="flex justify-between items-center gap-2 mb-2">
             <span className="flex items-center gap-2 text-white">
               <span
