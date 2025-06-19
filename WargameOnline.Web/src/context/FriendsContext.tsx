@@ -33,52 +33,52 @@ type FriendsContextType = {
 
 const FriendsContext = createContext<FriendsContextType | undefined>(undefined)
 
-export const FriendsProvider = ({ children }: { children: ReactNode }) => {
+export const useFriends = () => {
+  const context = useContext(FriendsContext)
+  if (!context) throw new Error('Please call useFriends inside FriendsProvider')
+  return context
+}
+
+export const FriendsProvider = ({
+  token,
+  currentUserId,
+  children,
+}: {
+  token: string
+  currentUserId: number
+  children: ReactNode
+}) => {
   const [friends, setFriends] = useState<Friend[]>([])
   const [activeChat, setActiveChat] = useState<Friend | null>(null)
   const [messages, setMessages] = useState<{ [userId: number]: Message[] }>({})
-  const [token, setToken] = useState<string | null>(null)
-  const [currentUserId, setCurrentUserId] = useState<number>(0)
 
-  // 🔐 Read token and User Id
+  // 🔁 Carica amici all’avvio
   useEffect(() => {
-    const t = localStorage.getItem('token')
-    if (!t) return
-    setToken(t)
+     console.log('🎯 token:', token)
+  console.log('🎯 currentUserId:', currentUserId)
 
+    if (!token || !currentUserId) return
+
+  const fetchFriends = async () => {
     try {
-      const payload = JSON.parse(atob(t.split('.')[1]))
-      const idClaim = payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier']
-      setCurrentUserId(parseInt(idClaim))
-    } catch (err) {
-      console.error('JWT parsing error:', err)
-    }
-  }, [])
-
-  // 🔁 Load friends in login
-  useEffect(() => {
-    if (!token) return
-
-    const fetchFriends = async () => {
-      try {
-        const res = await fetch(API.friends, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        if (res.ok) {
-          const data = await res.json()
-          setFriends(data)
-        }
-      } catch (err) {
-        console.error('Friends fetching error:', err)
+      console.log('🔁 chiamata a /api/friends in partenza...') // 👈 metti questo
+      const res = await fetch(API.friends, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setFriends(data.filter((f: Friend) => f.id !== currentUserId))
+      } else {
+        console.warn('❌ errore nella fetch friends:', res.status)
       }
+    } catch (err) {
+      console.error('❌ Friends fetching error:', err)
     }
+  }
 
     fetchFriends()
-    const interval = setInterval(fetchFriends, 10000)
-    return () => clearInterval(interval)
-  }, [token])
+  }, [token, currentUserId])
 
-  // ✅ Update online status
   const updateOnlineStatus = (id: number, online: boolean) => {
     setFriends(prev =>
       prev.map(f =>
@@ -87,38 +87,32 @@ export const FriendsProvider = ({ children }: { children: ReactNode }) => {
     )
   }
 
-  // ⚡️ Message handling signalR connections
   useEffect(() => {
     if (!token || !currentUserId) return
 
     initializeSocket(
       token,
       (fromId, text) => {
-        const newMsg = {
+        const newMsg: Message = {
           text,
           senderId: fromId,
           timestamp: new Date().toISOString(),
         }
 
-        setMessages((prev) => ({
+        setMessages(prev => ({
           ...prev,
           [fromId]: [...(prev[fromId] || []), newMsg],
         }))
 
-        setActiveChat((prev) => {
+        setActiveChat(prev => {
           if (prev && prev.id === fromId) return prev
-          const sender = friends.find((f) => f.id === fromId)
-          if (sender) return sender
-
-          // 🔁 fallback: create a temp friend if unknown
-          return { id: fromId, username: `User#${fromId}`, isOnline: true }
+          const sender = friends.find(f => f.id === fromId)
+          return sender ?? { id: fromId, username: `User#${fromId}`, isOnline: true }
         })
-
       },
       updateOnlineStatus
     )
   }, [token, currentUserId, friends])
-
 
   const openChat = (friend: Friend) => setActiveChat(friend)
   const closeChat = () => setActiveChat(null)
@@ -138,10 +132,4 @@ export const FriendsProvider = ({ children }: { children: ReactNode }) => {
       {children}
     </FriendsContext.Provider>
   )
-}
-
-export const useFriends = () => {
-  const context = useContext(FriendsContext)
-  if (!context) throw new Error('Please call useFriends inside FriendsProvider')
-  return context
 }

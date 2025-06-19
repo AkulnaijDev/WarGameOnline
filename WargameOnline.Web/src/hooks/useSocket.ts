@@ -24,7 +24,7 @@ export function initializeSocket(
   if (connection) return // già inizializzato
 
   connection = new HubConnectionBuilder()
-    .withUrl(API.friends, {
+    .withUrl(API.friendsChatHub, {
       accessTokenFactory: () => token,
     })
     .withAutomaticReconnect()

@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useTranslation } from 'react-i18next'
-import { API } from '../lib/api'
 
 export default function AuthTabs() {
   const [tab, setTab] = useState<'login' | 'register'>('login')
@@ -10,29 +9,20 @@ export default function AuthTabs() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const navigate = useNavigate()
-  const { login } = useAuth()
+  const { login, register } = useAuth()
   const { t } = useTranslation()
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      const res = await fetch(API.register, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, email, password }),
-      })
-      if (res.ok) {
-        alert(t('registrationCompleted'))
-        setTab('login')
-        setUsername('')
-        setEmail('')
-        setPassword('')
-      } else {
-        const data = await res.text()
-        alert(data || t('registrationError'))
-      }
+      await register(username, email, password)
+      alert(t('registrationCompleted'))
+      setTab('login')
+      setUsername('')
+      setEmail('')
+      setPassword('')
     } catch (err) {
-      alert(t('registrationNetworkError'))
+      alert(t('registrationError'))
       console.error(err)
     }
   }
@@ -40,21 +30,10 @@ export default function AuthTabs() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      const res = await fetch(API.login, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      })
-      if (!res.ok) {
-        alert(t('invalidCredentials'))
-        return
-      }
-      const data = await res.json()
-      localStorage.setItem('token', data.token)
-      login()
+      await login(email, password)
       navigate('/home')
     } catch (err) {
-      alert(t('networkErrorsOnLogin'))
+      alert(t('invalidCredentials'))
       console.error(err)
     }
   }

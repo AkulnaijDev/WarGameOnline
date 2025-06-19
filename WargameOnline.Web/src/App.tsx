@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { AuthProvider,useAuth } from './context/AuthContext'
+import { AuthProvider, useAuth } from './context/AuthContext'
 import LanguageSelector from './components/LanguageSelector'
 import AuthPage from './pages/AuthPage'
 import HomePage from './pages/HomePage'
@@ -8,14 +8,16 @@ import FriendsSidebar from './components/FriendsSidebar'
 import ChatWindow from './components/ChatWindow'
 
 function ProtectedRoute({ children }: { children: JSX.Element }) {
-  const { isAuthenticated } = useAuth()
-  return isAuthenticated ? children : <Navigate to="/auth" replace />
+  const { token } = useAuth()
+  return token ? children : <Navigate to="/auth" replace />
 }
 
-function App() {
+function MainApp() {
+  const { token, currentUserId } = useAuth()
+
   return (
-    <AuthProvider>
-      <FriendsProvider>
+    token && currentUserId !== null ? (
+      <FriendsProvider token={token} currentUserId={currentUserId}>
         <BrowserRouter>
           <div className="relative min-h-screen bg-bg text-white">
             <div className="absolute top-4 right-4 z-50">
@@ -35,15 +37,27 @@ function App() {
               <Route path="*" element={<Navigate to="/auth" replace />} />
             </Routes>
 
-            {/* Overlay globale */}
             <FriendsSidebar />
             <ChatWindow />
-
           </div>
         </BrowserRouter>
       </FriendsProvider>
-    </AuthProvider>
+    ) : (
+      // solo login
+      <BrowserRouter>
+        <Routes>
+          <Route path="/auth" element={<AuthPage />} />
+          <Route path="*" element={<Navigate to="/auth" replace />} />
+        </Routes>
+      </BrowserRouter>
+    )
   )
 }
 
-export default App
+export default function App() {
+  return (
+    <AuthProvider>
+      <MainApp />
+    </AuthProvider>
+  )
+}

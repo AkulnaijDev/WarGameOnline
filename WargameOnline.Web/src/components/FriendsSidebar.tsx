@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useFriends } from '../context/FriendsContext'
+import { useAuth } from '../context/AuthContext'
 import { useTranslation } from 'react-i18next'
-import { useLocation } from 'react-router-dom'
 import { API } from '../lib/api'
 
 type PendingUser = {
@@ -9,41 +9,43 @@ type PendingUser = {
   username: string
 }
 
+type Friend = {
+  id: number
+  username: string
+  isOnline: boolean
+}
+
 export default function FriendsSidebar() {
   const { friends, openChat } = useFriends()
+  const { token, isAuthenticated } = useAuth()
   const [username, setUsername] = useState('')
   const [feedback, setFeedback] = useState('')
   const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([])
   const { t } = useTranslation()
-  const token = localStorage.getItem('token')
+
   const pendingCount = pendingUsers.length
-  const location = useLocation()
-  const isAuth = location.pathname.startsWith('/auth')
-
-
-  // 🔄 Load received friendship requests
-  const fetchPendingUsers = async () => {
-    if (!token) return
-    try {
-      const res = await fetch(API.friendsPending, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      const data = await res.json()
-      setPendingUsers(data)
-    } catch {
-      setPendingUsers([])
-    }
-  }
 
   useEffect(() => {
+    const fetchPendingUsers = async () => {
+      if (!token) return
+      try {
+        const res = await fetch(API.friendsPending, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        const data = await res.json()
+        setPendingUsers(data)
+      } catch {
+        setPendingUsers([])
+      }
+    }
+
     fetchPendingUsers()
     const interval = setInterval(fetchPendingUsers, 10000)
     return () => clearInterval(interval)
   }, [token])
 
-  // ➕ Add a friend
   const handleAdd = async () => {
-    if (!username.trim()) return
+    if (!username.trim() || !token) return
     try {
       const res = await fetch(API.friendsRequest, {
         method: 'POST',
@@ -62,8 +64,8 @@ export default function FriendsSidebar() {
     setTimeout(() => setFeedback(''), 4000)
   }
 
-  // 🤝 Accept or deny request
   const respond = async (username: string, action: 'Accept' | 'Reject') => {
+    if (!token) return
     try {
       await fetch(API.friendsRespond, {
         method: 'POST',
@@ -73,30 +75,22 @@ export default function FriendsSidebar() {
         },
         body: JSON.stringify({ username, action }),
       })
-      fetchPendingUsers()
-    } catch {
-      // optional: error feedback
-    }
+      setPendingUsers(prev => prev.filter(p => p.username !== username))
+    } catch {}
   }
 
   const handleRemove = async (id: number) => {
-    const token = localStorage.getItem('token')
     if (!token) return
-
     await fetch(`${API.friendsChatHub}/${id}`, {
       method: 'DELETE',
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      headers: { Authorization: `Bearer ${token}` },
     })
-
-    // Update manually the list
-    fetchPendingUsers()
   }
 
+  if (!isAuthenticated) return null
 
   return (
-    <div className={`fixed bottom-4 right-4 w-72 bg-slate-800 border border-slate-600 rounded-xl shadow-xl text-sm z-50 ${isAuth ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+    <div className="fixed bottom-4 right-4 w-72 bg-slate-800 border border-slate-600 rounded-xl shadow-xl text-sm z-50">
       <div className="flex justify-center items-center px-3 py-2 border-b border-slate-600 relative">
         <h3 className="font-semibold text-white tracking-wide text-xs">{t('friends')}</h3>
         {pendingCount > 0 && (
@@ -106,13 +100,11 @@ export default function FriendsSidebar() {
         )}
       </div>
 
-
-      {/* 📨 Received request */}
       {pendingUsers.length > 0 && (
         <div className="px-3 py-2 border-b border-slate-600">
           <p className="text-xs text-slate-300 mb-2 font-semibold">{t('arrivedFriendshipRequests')}</p>
           <ul className="space-y-1">
-            {pendingUsers.map((u) => (
+            {pendingUsers.map(u => (
               <li key={u.id} className="flex justify-between items-center">
                 <span className="text-white">{u.username}</span>
                 <div className="flex gap-1">
@@ -135,22 +127,16 @@ export default function FriendsSidebar() {
         </div>
       )}
 
-      {/* 👥 Friends */}
       <ul className="p-2 max-h-40 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-transparent">
-
-
-        {friends.map((friend) => (
+        {friends.map((friend: Friend) => (
           <li key={friend.id} className="flex justify-between items-center gap-2 mb-2">
-            {/* 🔵 Status + name on the left */}
             <span className="flex items-center gap-2 text-white">
               <span
                 className={`h-2 w-2 rounded-full ${friend.isOnline ? 'bg-green-500' : 'bg-gray-400'}`}
-                title={`${friend.isOnline ? t('online') : t('offline')}`}
+                title={friend.isOnline ? t('online') : t('offline')}
               />
               {friend.username}
             </span>
-
-            {/* ✉️ ❌ right buttons */}
             <div className="flex items-center gap-2 text-sm">
               <button
                 onClick={() => openChat(friend)}
@@ -171,10 +157,8 @@ export default function FriendsSidebar() {
         ))}
       </ul>
 
-      {/* ➕ Add friend */}
-      <div className="p-2 border-t border-slate-700"></div>
+      <div className="p-2 border-t border-slate-700" />
       <div className="flex items-center gap-2 mb-1 px-2">
-
         <input
           value={username}
           onChange={(e) => setUsername(e.target.value)}
@@ -188,19 +172,18 @@ export default function FriendsSidebar() {
         >
           ➕
         </button>
-
-
       </div>
+
       {feedback && (
         <p
-          className={`mt-1 mr-1 mb-1 ml-1 px-2 py-1 text-xs rounded ${feedback.startsWith('✅')
+          className={`mt-1 mx-1 px-2 py-1 text-xs rounded ${
+            feedback.startsWith('✅')
               ? 'bg-green-800 text-green-300'
               : 'bg-red-800 text-red-300'
-            }`}
+          }`}
         >
           {feedback}
         </p>
-
       )}
     </div>
   )
