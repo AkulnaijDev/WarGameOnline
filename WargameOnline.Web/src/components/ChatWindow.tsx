@@ -14,8 +14,8 @@ export default function ChatWindow() {
 
   if (!activeChat) return null
 
-  // Connessione SignalR globale
-  const connection = window.connection // 👈 Assicurati che venga impostata globalmente!
+  // SignalR global Connection
+  const connection = window.connection // 👈 Globally set!
 
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault()
@@ -28,13 +28,13 @@ export default function ChatWindow() {
       timestamp: new Date().toISOString(),
     }
 
-    // Aggiunta locale
+    // Local add
     setMessages((prev) => ({
       ...prev,
       [activeChat.id]: [...(prev[activeChat.id] || []), msg],
     }))
 
-    // Invia tramite SignalR
+    // Sending via SignalR
     connection?.invoke('SendMessage', activeChat.id, trimmed)
 
     setInput('')
@@ -65,11 +65,10 @@ export default function ChatWindow() {
             <div
               key={i}
               className={`flex flex-col max-w-xs px-3 py-2 rounded-xl text-sm ${isMine
-                  ? 'bg-green-100 text-green-900 self-start rounded-bl-none'
-                  : 'bg-blue-100 text-blue-900 self-end rounded-br-none'
+                ? 'bg-green-100 text-green-900 self-start rounded-bl-none'
+                : 'bg-blue-100 text-blue-900 self-end rounded-br-none'
                 }`}
             >
-
               <span>{msg.text}</span>
               <span className="text-xs text-slate-500 text-right mt-1">{time}</span>
             </div>
@@ -78,7 +77,7 @@ export default function ChatWindow() {
         <div ref={bottomRef} />
       </div>
 
-      {/* ✏️ Input messaggio */}
+      {/* ✏️ Message input */}
       <form onSubmit={handleSend} className="p-2 border-t border-border bg-background flex gap-2">
         <input
           value={input}

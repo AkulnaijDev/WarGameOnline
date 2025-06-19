@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useTranslation } from 'react-i18next'
+import { API } from '../lib/api'
 
 export default function AuthTabs() {
   const [tab, setTab] = useState<'login' | 'register'>('login')
@@ -15,23 +16,23 @@ export default function AuthTabs() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      const res = await fetch('https://localhost:5103/api/auth/register', {
+      const res = await fetch(API.register, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, email, password }),
       })
       if (res.ok) {
-        alert(t('Registrazione completata'))
+        alert(t('registrationCompleted'))
         setTab('login')
         setUsername('')
         setEmail('')
         setPassword('')
       } else {
         const data = await res.text()
-        alert(data || t('Errore nella registrazione'))
+        alert(data || t('registrationError'))
       }
     } catch (err) {
-      alert(t('Errore di rete durante la registrazione'))
+      alert(t('registrationNetworkError'))
       console.error(err)
     }
   }
@@ -39,13 +40,13 @@ export default function AuthTabs() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      const res = await fetch('https://localhost:5103/api/auth/login', {
+      const res = await fetch(API.login, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       })
       if (!res.ok) {
-        alert(t('Credenziali non valide'))
+        alert(t('invalidCredentials'))
         return
       }
       const data = await res.json()
@@ -53,7 +54,7 @@ export default function AuthTabs() {
       login()
       navigate('/home')
     } catch (err) {
-      alert(t('Errore di rete durante il login'))
+      alert(t('networkErrorsOnLogin'))
       console.error(err)
     }
   }

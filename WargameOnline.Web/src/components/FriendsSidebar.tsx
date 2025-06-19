@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useFriends } from '../context/FriendsContext'
 import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router-dom'
-
+import { API } from '../lib/api'
 
 type PendingUser = {
   id: number
@@ -21,11 +21,11 @@ export default function FriendsSidebar() {
   const isAuth = location.pathname.startsWith('/auth')
 
 
-  // 🔄 Carica richieste ricevute
+  // 🔄 Load received friendship requests
   const fetchPendingUsers = async () => {
     if (!token) return
     try {
-      const res = await fetch('https://localhost:5103/api/friends/pending', {
+      const res = await fetch(API.friendsPending, {
         headers: { Authorization: `Bearer ${token}` },
       })
       const data = await res.json()
@@ -41,11 +41,11 @@ export default function FriendsSidebar() {
     return () => clearInterval(interval)
   }, [token])
 
-  // ➕ Aggiungi amico
+  // ➕ Add a friend
   const handleAdd = async () => {
     if (!username.trim()) return
     try {
-      const res = await fetch('https://localhost:5103/api/friends/request', {
+      const res = await fetch(API.friendsRequest, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -62,10 +62,10 @@ export default function FriendsSidebar() {
     setTimeout(() => setFeedback(''), 4000)
   }
 
-  // 🤝 Accetta o rifiuta richiesta
+  // 🤝 Accept or deny request
   const respond = async (username: string, action: 'Accept' | 'Reject') => {
     try {
-      await fetch('https://localhost:5103/api/friends/respond', {
+      await fetch(API.friendsRespond, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -83,14 +83,14 @@ export default function FriendsSidebar() {
     const token = localStorage.getItem('token')
     if (!token) return
 
-    await fetch(`https://localhost:5103/api/friends/${id}`, {
+    await fetch(`${API.friendsChatHub}/${id}`, {
       method: 'DELETE',
       headers: {
         Authorization: `Bearer ${token}`,
       },
     })
 
-    // aggiorna manualmente la lista dopo
+    // Update manually the list
     fetchPendingUsers()
   }
 
@@ -98,7 +98,7 @@ export default function FriendsSidebar() {
   return (
     <div className={`fixed bottom-4 right-4 w-72 bg-slate-800 border border-slate-600 rounded-xl shadow-xl text-sm z-50 ${isAuth ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
       <div className="flex justify-center items-center px-3 py-2 border-b border-slate-600 relative">
-        <h3 className="font-semibold text-white tracking-wide text-xs">AMICI</h3>
+        <h3 className="font-semibold text-white tracking-wide text-xs">{t('friends')}</h3>
         {pendingCount > 0 && (
           <span className="absolute right-3 bg-red-600 text-white text-xs px-2 py-0.5 rounded-full">
             {pendingCount}
@@ -107,10 +107,10 @@ export default function FriendsSidebar() {
       </div>
 
 
-      {/* 📨 Richieste ricevute */}
+      {/* 📨 Received request */}
       {pendingUsers.length > 0 && (
         <div className="px-3 py-2 border-b border-slate-600">
-          <p className="text-xs text-slate-300 mb-2 font-semibold">Richieste in arrivo</p>
+          <p className="text-xs text-slate-300 mb-2 font-semibold">{t('arrivedFriendshipRequests')}</p>
           <ul className="space-y-1">
             {pendingUsers.map((u) => (
               <li key={u.id} className="flex justify-between items-center">
@@ -135,13 +135,13 @@ export default function FriendsSidebar() {
         </div>
       )}
 
-      {/* 👥 Amici */}
+      {/* 👥 Friends */}
       <ul className="p-2 max-h-40 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-transparent">
 
 
         {friends.map((friend) => (
           <li key={friend.id} className="flex justify-between items-center gap-2 mb-2">
-            {/* 🔵 Status + nome a sinistra */}
+            {/* 🔵 Status + name on the left */}
             <span className="flex items-center gap-2 text-white">
               <span
                 className={`h-2 w-2 rounded-full ${friend.isOnline ? 'bg-green-500' : 'bg-gray-400'}`}
@@ -150,7 +150,7 @@ export default function FriendsSidebar() {
               {friend.username}
             </span>
 
-            {/* ✉️ ❌ pulsanti a destra */}
+            {/* ✉️ ❌ right buttons */}
             <div className="flex items-center gap-2 text-sm">
               <button
                 onClick={() => openChat(friend)}
@@ -171,14 +171,14 @@ export default function FriendsSidebar() {
         ))}
       </ul>
 
-      {/* ➕ Aggiungi amico */}
+      {/* ➕ Add friend */}
       <div className="p-2 border-t border-slate-700"></div>
       <div className="flex items-center gap-2 mb-1 px-2">
 
         <input
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          placeholder="Add friend"
+          placeholder={t('addFriend')}
           className="flex-1 px-2 py-1 text-sm rounded bg-slate-700 text-white placeholder-slate-400"
         />
         <button
@@ -193,14 +193,13 @@ export default function FriendsSidebar() {
       </div>
       {feedback && (
         <p
-  className={`mt-1 mr-1 mb-1 ml-1 px-2 py-1 text-xs rounded ${
-    feedback.startsWith('✅')
-      ? 'bg-green-800 text-green-300'
-      : 'bg-red-800 text-red-300'
-  }`}
->
-  {feedback}
-</p>
+          className={`mt-1 mr-1 mb-1 ml-1 px-2 py-1 text-xs rounded ${feedback.startsWith('✅')
+              ? 'bg-green-800 text-green-300'
+              : 'bg-red-800 text-red-300'
+            }`}
+        >
+          {feedback}
+        </p>
 
       )}
     </div>

@@ -3,17 +3,14 @@ import { AuthProvider,useAuth } from './context/AuthContext'
 import LanguageSelector from './components/LanguageSelector'
 import AuthPage from './pages/AuthPage'
 import HomePage from './pages/HomePage'
-
 import { FriendsProvider } from './context/FriendsContext'
 import FriendsSidebar from './components/FriendsSidebar'
 import ChatWindow from './components/ChatWindow'
-
 
 function ProtectedRoute({ children }: { children: JSX.Element }) {
   const { isAuthenticated } = useAuth()
   return isAuthenticated ? children : <Navigate to="/auth" replace />
 }
-
 
 function App() {
   return (
@@ -41,6 +38,7 @@ function App() {
             {/* Overlay globale */}
             <FriendsSidebar />
             <ChatWindow />
+
           </div>
         </BrowserRouter>
       </FriendsProvider>

@@ -6,7 +6,6 @@ export default function HomePage() {
   const { logout } = useAuth()
   const { t } = useTranslation()
 
-
   type JwtPayload = {
     [key: string]: string
   }
@@ -19,8 +18,7 @@ export default function HomePage() {
     username =
       payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] ||
       payload.name ||
-      'rottoBroken'
-    
+      'unknownUser'
   }
 
   return (
@@ -38,13 +36,13 @@ export default function HomePage() {
           onClick={logout}
           className="mt-6 text-sm text-gray-400 hover:text-red-400 transition-colors"
         >
-          Logout
+          {t('logout')}
         </button>
       </aside>
 
       <main className="flex-1 p-6">
-        <h1 className="text-2xl font-semibold mb-4">{username && `${username}`} - Benvenuto nella Home </h1>
-        <p className="text-gray-300">Qui troverai tutte le funzionalità principali del gioco.</p>
+        <h1 className="text-2xl font-semibold mb-4">{username && `${username}`} - {t('welcomeHome')} </h1>
+        <p className="text-gray-300">{t('welcomeHomeSubtext')}</p>
       </main>
     </div>
   )

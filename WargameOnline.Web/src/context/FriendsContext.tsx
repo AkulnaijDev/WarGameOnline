@@ -7,7 +7,7 @@ import {
 } from 'react'
 
 import { initializeSocket } from '../hooks/useSocket'
-
+import { API } from '../lib/api'
 
 type Friend = {
   id: number
@@ -40,7 +40,7 @@ export const FriendsProvider = ({ children }: { children: ReactNode }) => {
   const [token, setToken] = useState<string | null>(null)
   const [currentUserId, setCurrentUserId] = useState<number>(0)
 
-  // 🔐 Leggi token e ID utente
+  // 🔐 Read token and User Id
   useEffect(() => {
     const t = localStorage.getItem('token')
     if (!t) return
@@ -51,17 +51,17 @@ export const FriendsProvider = ({ children }: { children: ReactNode }) => {
       const idClaim = payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier']
       setCurrentUserId(parseInt(idClaim))
     } catch (err) {
-      console.error('Errore parsing JWT:', err)
+      console.error('JWT parsing error:', err)
     }
   }, [])
 
-  // 🔁 Carica amici alla login
+  // 🔁 Load friends in login
   useEffect(() => {
     if (!token) return
 
     const fetchFriends = async () => {
       try {
-        const res = await fetch('https://localhost:5103/api/friends', {
+        const res = await fetch(API.friends, {
           headers: { Authorization: `Bearer ${token}` },
         })
         if (res.ok) {
@@ -69,7 +69,7 @@ export const FriendsProvider = ({ children }: { children: ReactNode }) => {
           setFriends(data)
         }
       } catch (err) {
-        console.error('Errore fetching amici:', err)
+        console.error('Friends fetching error:', err)
       }
     }
 
@@ -78,7 +78,7 @@ export const FriendsProvider = ({ children }: { children: ReactNode }) => {
     return () => clearInterval(interval)
   }, [token])
 
-  // ✅ Aggiorna stato online
+  // ✅ Update online status
   const updateOnlineStatus = (id: number, online: boolean) => {
     setFriends(prev =>
       prev.map(f =>
@@ -87,7 +87,7 @@ export const FriendsProvider = ({ children }: { children: ReactNode }) => {
     )
   }
 
-  // ⚡️ Gestione messaggi e connessioni SignalR
+  // ⚡️ Message handling signalR connections
   useEffect(() => {
     if (!token || !currentUserId) return
 
@@ -110,7 +110,7 @@ export const FriendsProvider = ({ children }: { children: ReactNode }) => {
           const sender = friends.find((f) => f.id === fromId)
           if (sender) return sender
 
-          // 🔁 fallback: crea un amico temporaneo se sconosciuto
+          // 🔁 fallback: create a temp friend if unknown
           return { id: fromId, username: `User#${fromId}`, isOnline: true }
         })
 
@@ -142,6 +142,6 @@ export const FriendsProvider = ({ children }: { children: ReactNode }) => {
 
 export const useFriends = () => {
   const context = useContext(FriendsContext)
-  if (!context) throw new Error('useFriends deve essere usato dentro FriendsProvider')
+  if (!context) throw new Error('Please call useFriends inside FriendsProvider')
   return context
 }

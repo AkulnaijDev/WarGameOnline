@@ -10,7 +10,7 @@ export function useAuth() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, email, password }),
     });
-    if (!res.ok) throw new Error("Registrazione fallita");
+    if (!res.ok) throw new Error("Failed registration");
   };
 
   const login = async (email: string, password: string) => {
@@ -19,7 +19,7 @@ export function useAuth() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
     });
-    if (!res.ok) throw new Error("Login fallito");
+    if (!res.ok) throw new Error("Failed login");
     const data = await res.json();
     setToken(data.token);
     return data;
@@ -29,7 +29,7 @@ export function useAuth() {
     const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users/me`, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    if (!res.ok) throw new Error("Non autorizzato");
+    if (!res.ok) throw new Error("Unauthorized");
     return await res.json();
   };
 

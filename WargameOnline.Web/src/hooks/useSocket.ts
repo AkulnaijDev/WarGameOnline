@@ -1,4 +1,5 @@
 import { HubConnectionBuilder, HubConnection } from '@microsoft/signalr'
+import { API } from '../lib/api'
 
 declare global {
   interface Window {
@@ -23,7 +24,7 @@ export function initializeSocket(
   if (connection) return // già inizializzato
 
   connection = new HubConnectionBuilder()
-    .withUrl('https://localhost:5103/hub/friends', {
+    .withUrl(API.friends, {
       accessTokenFactory: () => token,
     })
     .withAutomaticReconnect()
@@ -39,6 +40,6 @@ export function initializeSocket(
 
   connection
     .start()
-    .then(() => console.log('🛰️ SignalR connesso'))
-    .catch((err) => console.error('❌ Connessione SignalR fallita:', err))
+    .then(() => console.log('🛰️ SignalR is connected'))
+    .catch((err) => console.error('❌ SignalR connection failed:', err))
 }
