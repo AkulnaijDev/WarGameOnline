@@ -39,7 +39,9 @@ i18n.use(initReactI18next).init({
         addFriend: 'Add friend',
         typeMessage: 'Type your msg',
         send: 'Send',
-        arrivedFriendshipRequests: 'Incoming requests',    
+        arrivedFriendshipRequests: 'Incoming requests',
+        friendshipRequestSent:'Sent friendship request',
+        friendshipRequestError:'Error in sending friendship request',
       }
     },
     it: {

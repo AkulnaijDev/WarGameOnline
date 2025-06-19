@@ -40,20 +40,22 @@ public class FriendsController : ControllerBase
         if (receiver == null || receiver.Id == currentId)
             return BadRequest("Utente non valido");
 
-        var already = await _friends.AlreadyFriendsOrPending(currentId, receiver.Id);
-        if (already) return Conflict("Richiesta già inviata o già amici");
+        // 👇 Togliamo il check
+        // var already = await _friends.AlreadyFriendsOrPending(...);
+        // if (already) return Conflict(...);
 
         await _friends.SendRequestAsync(currentId, receiver.Id);
 
-        // 📣 Notifica il ricevente
+        // Notifica via SignalR
         await _hub.Clients.User(receiver.Id.ToString()).SendAsync("FriendRequestReceived", new
         {
             id = sender.Id,
             username = sender.Username
         });
 
-        return Ok();
+        return Ok("Richiesta inviata");
     }
+
 
     [HttpPost("respond")]
     [Authorize]

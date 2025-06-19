@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { API } from '../lib/api'
 
 export default function FriendsSidebar() {
-  const { friends, openChat, pendingUsers, setPendingUsers } = useFriends()
+  const { friends, openChat, activeChat, setActiveChat, pendingUsers, setPendingUsers } = useFriends()
   const { token, isAuthenticated } = useAuth()
   const [username, setUsername] = useState('')
   const [feedback, setFeedback] = useState('')
@@ -14,24 +14,28 @@ export default function FriendsSidebar() {
   const pendingCount = pendingUsers.length
 
   const handleAdd = async () => {
-    if (!username.trim() || !token) return
-    try {
-      const res = await fetch(API.friendsRequest, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ username }),
-      })
-      const msg = await res.text()
-      setFeedback(res.ok ? `✅ ${msg}` : `❌ ${msg}`)
-      if (res.ok) setUsername('')
-    } catch {
-      setFeedback('❌ Errore di rete.')
-    }
-    setTimeout(() => setFeedback(''), 4000)
+  if (!username.trim() || !token) return
+
+  try {
+    const res = await fetch(API.friendsRequest, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ username }),
+    })
+
+    await res.text()
+    setFeedback(res.ok ? `✅ ${t('friendshipRequestSent')}` : `❌ ${t('friendshipRequestError')}`)
+    if (res.ok) setUsername('')
+  } catch {
+    setFeedback('❌ Errore di rete.')
   }
+
+  setTimeout(() => setFeedback(''), 4000)
+}
+
 
   const respond = async (username: string, action: 'Accept' | 'Reject') => {
     if (!token) return
@@ -54,6 +58,10 @@ export default function FriendsSidebar() {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` },
     })
+    // Chiude chat se era aperta con l'amico eliminato
+    if (activeChat?.id === id) {
+      setActiveChat(null)
+    }
   }
 
   if (!isAuthenticated) return null
@@ -145,11 +153,10 @@ export default function FriendsSidebar() {
 
       {feedback && (
         <p
-          className={`mt-1 mx-1 px-2 py-1 text-xs rounded ${
-            feedback.startsWith('✅')
+          className={`mt-1 mx-1 px-2 py-1 text-xs rounded ${feedback.startsWith('✅')
               ? 'bg-green-800 text-green-300'
               : 'bg-red-800 text-red-300'
-          }`}
+            }`}
         >
           {feedback}
         </p>

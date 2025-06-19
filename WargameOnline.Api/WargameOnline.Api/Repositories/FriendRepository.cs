@@ -39,16 +39,30 @@ namespace WargameOnline.Api.Repositories
         {
             using var conn = new SqliteConnection(_conn);
 
-            // Elimina eventuali richieste rifiutate precedenti
-            var delete = @"DELETE FROM Friendships
-                   WHERE RequesterId = @Sender AND AddresseeId = @Receiver AND Status = 'Rejected'";
-            await conn.ExecuteAsync(delete, new { Sender = senderId, Receiver = receiverId });
+            var checkPending = @"SELECT COUNT(*) FROM Friendships
+                         WHERE RequesterId = @Sender AND AddresseeId = @Receiver AND Status = 'Pending'";
 
-            // Inserisci nuova richiesta
-            var insert = @"INSERT INTO Friendships (RequesterId, AddresseeId, Status)
-                   VALUES (@Sender, @Receiver, 'Pending')";
-            await conn.ExecuteAsync(insert, new { Sender = senderId, Receiver = receiverId });
+            var pendingExists = await conn.ExecuteScalarAsync<int>(checkPending, new { Sender = senderId, Receiver = receiverId });
+
+            if (pendingExists > 0)
+            {
+                var update = @"UPDATE Friendships SET RequestedAt = CURRENT_TIMESTAMP
+                       WHERE RequesterId = @Sender AND AddresseeId = @Receiver AND Status = 'Pending'";
+                await conn.ExecuteAsync(update, new { Sender = senderId, Receiver = receiverId });
+            }
+            else
+            {
+                // Cancella eventuali rifiutate per sicurezza (vedi soluzione precedente)
+                var deleteRejected = @"DELETE FROM Friendships
+                               WHERE RequesterId = @Sender AND AddresseeId = @Receiver AND Status = 'Rejected'";
+                await conn.ExecuteAsync(deleteRejected, new { Sender = senderId, Receiver = receiverId });
+
+                var insert = @"INSERT INTO Friendships (RequesterId, AddresseeId, Status, RequestedAt)
+                       VALUES (@Sender, @Receiver, 'Pending', CURRENT_TIMESTAMP)";
+                await conn.ExecuteAsync(insert, new { Sender = senderId, Receiver = receiverId });
+            }
         }
+
 
         public async Task<IEnumerable<User>> GetPendingReceivedAsync(int userId)
         {

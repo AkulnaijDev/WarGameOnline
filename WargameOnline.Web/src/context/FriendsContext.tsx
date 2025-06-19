@@ -29,6 +29,7 @@ type Message = {
 type FriendsContextType = {
   friends: Friend[]
   activeChat: Friend | null
+  setActiveChat: React.Dispatch<React.SetStateAction<Friend | null>>
   openChat: (f: Friend) => void
   closeChat: () => void
   messages: { [userId: number]: Message[] }
@@ -142,6 +143,7 @@ export const FriendsProvider = ({
         },
         onFriendRemoved: (removedId) => {
           setFriends(prev => prev.filter(f => f.id !== removedId))
+          setActiveChat(prev => (prev && prev.id === removedId ? null : prev))
         }
       }
     )
@@ -155,6 +157,7 @@ export const FriendsProvider = ({
       value={{
         friends,
         activeChat,
+        setActiveChat,
         openChat,
         closeChat,
         messages,
