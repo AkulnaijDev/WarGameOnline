@@ -1,24 +1,23 @@
 import { useAuth } from '../context/AuthContext'
 import { useTranslation } from 'react-i18next'
-import { jwtDecode } from "jwt-decode"
+import { jwtDecode } from 'jwt-decode'
+
+type JwtPayload = {
+  [key: string]: string
+}
 
 export default function HomePage() {
-  const { logout } = useAuth()
+  const { token, logout } = useAuth()
   const { t } = useTranslation()
 
-  type JwtPayload = {
-    [key: string]: string
-  }
-
-  const token = localStorage.getItem("token")
-  let username = ""
+  let username = 'UnknownUser'
 
   if (token) {
     const payload = jwtDecode<JwtPayload>(token)
     username =
       payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] ||
       payload.name ||
-      'unknownUser'
+      'UnknownUser'
   }
 
   return (
@@ -41,7 +40,7 @@ export default function HomePage() {
       </aside>
 
       <main className="flex-1 p-6">
-        <h1 className="text-2xl font-semibold mb-4">{username && `${username}`} - {t('welcomeHome')} </h1>
+        <h1 className="text-2xl font-semibold mb-4">{username} — {t('welcomeHome')}</h1>
         <p className="text-gray-300">{t('welcomeHomeSubtext')}</p>
       </main>
     </div>
