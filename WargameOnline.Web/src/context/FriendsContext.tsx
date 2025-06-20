@@ -136,7 +136,10 @@ export const FriendsProvider = ({
       updateOnlineStatus,
       {
         onFriendRequestReceived: (pending: PendingUser) => {
-          setPendingUsers(prev => [...prev, pending])
+          setPendingUsers(prev => [
+            ...prev.filter(u => u.id !== pending.id),
+            pending
+          ])
         },
         onFriendRequestAccepted: (newFriend: Friend) => {
           setFriends(prev => [...prev, newFriend])
