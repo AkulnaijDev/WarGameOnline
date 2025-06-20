@@ -45,7 +45,16 @@ function MainApp() {
 
           <Routes>
             <Route path="/auth" element={<AuthPage />} />
-            <Route path="/armyCreator" element={<ArmyCreator />} />
+
+            <Route 
+              path="/armyCreator" 
+              element={
+                <ProtectedRoute>
+                  <ArmyCreator />
+                </ProtectedRoute>
+              } 
+            />
+
             <Route
               path="/home"
               element={

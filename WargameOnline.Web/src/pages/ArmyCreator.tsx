@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import ArmyStartMenu from '../components/ArmyStartMenu'
 import ArmyHeader from '../components/ArmyHeader'
 import ArmySidebar from '../components/ArmySidebar'
@@ -13,6 +13,7 @@ import {
   deleteArmy,
 } from '../api/armyApi'
 import { Unit, UnitWithCount, SavedArmy } from '../types/types'
+import Sidebar from '../components/Sidebar'
 
 type Mode = 'start' | 'create' | 'edit'
 type Faction = {
@@ -182,20 +183,29 @@ export default function ArmyCreator() {
   }
 
   if (mode === 'start') {
-    return (
-      <ArmyStartMenu
-        canEdit={savedArmies.length > 0}
-        onCreate={() => {
-          resetState()
-          setMode('create')
-        }}
-        onEdit={() => setMode('edit')}
-      />
-    )
-  }
-
   return (
-    <div className="min-h-screen bg-bg text-white p-6 flex flex-col items-center">
+    <div className="min-h-screen flex flex-col sm:flex-row bg-bg text-white">
+      <Sidebar />
+      <main className="flex-1 p-6 flex flex-col items-center">
+        <ArmyStartMenu
+          canEdit={savedArmies.length > 0}
+          onCreate={() => {
+            resetState()
+            setMode('create')
+          }}
+          onEdit={() => setMode('edit')}
+        />
+      </main>
+    </div>
+  )
+}
+
+
+return (
+  <div className="min-h-screen flex flex-col sm:flex-row bg-bg text-white">
+    <Sidebar />
+
+    <main className="flex-1 p-6 flex flex-col items-center">
       <button
         onClick={() => setMode('start')}
         className="self-start mb-4 text-sm text-slate-400 hover:underline"
@@ -265,6 +275,8 @@ export default function ArmyCreator() {
           }
         />
       </div>
-    </div>
-  )
+    </main>
+  </div>
+)
+
 }
