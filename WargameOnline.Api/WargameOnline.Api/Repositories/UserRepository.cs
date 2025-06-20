@@ -10,7 +10,8 @@ namespace WargameOnline.Api.Repositories
         Task<User?> GetByIdAsync(int id);
         Task AddAsync(User user);
         Task<User?> GetByUsernameAsync(string username);
-
+        Task<string?> GetRefreshTokenAsync(int userId);
+        Task UpdateRefreshTokenAsync(int userId, string token);
     }
 
     public class UserRepository : IUserRepository
@@ -52,7 +53,19 @@ namespace WargameOnline.Api.Repositories
             return await conn.QuerySingleOrDefaultAsync<User>(query, new { Username = username });
         }
 
+        public async Task<string?> GetRefreshTokenAsync(int userId)
+        {
+            const string query = "SELECT RefreshToken FROM Users WHERE Id = @userId";
+            using var conn = _context.Create();
+            return await conn.ExecuteScalarAsync<string?>(query, new { userId });
+        }
 
+        public async Task UpdateRefreshTokenAsync(int userId, string token)
+        {
+            const string query = "UPDATE Users SET RefreshToken = @token WHERE Id = @userId";
+            using var conn = _context.Create();
+            await conn.ExecuteAsync(query, new { userId, token });
+        }
     }
 
 }

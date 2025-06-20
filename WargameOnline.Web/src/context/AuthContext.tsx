@@ -4,6 +4,7 @@ import { API } from '../lib/api'
 
 type AuthContextType = {
   token: string | null
+  setToken: (t: string | null) => void
   currentUserId: number | null
   isAuthenticated: boolean
   login: (email: string, password: string) => Promise<void>
@@ -79,6 +80,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     <AuthContext.Provider
       value={{
         token,
+        setToken, // 👈 Aggiunto qui
         currentUserId,
         isAuthenticated: !!token,
         login,

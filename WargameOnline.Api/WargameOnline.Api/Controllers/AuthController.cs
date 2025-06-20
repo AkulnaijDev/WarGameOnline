@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using static WargameOnline.Api.Models.DTOs;
 using WargameOnline.Api.Repositories;
+using System.Security.Claims;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -31,7 +32,44 @@ public class AuthController : ControllerBase
         if (user is null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
             return Unauthorized("Credenziali non valide");
 
-        var token = _auth.GenerateJwtToken(user);
-        return Ok(new AuthResult(token, user.Username));
+        var accessToken = _auth.GenerateJwtToken(user);
+        var refreshToken = _auth.GenerateRefreshToken(); // 👈 serve aggiungere questo metodo sotto
+
+        await _repo.UpdateRefreshTokenAsync(user.Id, refreshToken);
+
+        Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.Strict,
+            Expires = DateTimeOffset.UtcNow.AddDays(7)
+        });
+
+        return Ok(new AuthResult(accessToken, user.Username));
     }
+
+
+    [HttpPost("refresh")]
+    public async Task<IActionResult> RefreshAccessToken()
+    {
+        if (!Request.Cookies.TryGetValue("refreshToken", out var refreshToken))
+            return Unauthorized("Token di refresh mancante");
+
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null) return Unauthorized();
+
+        var userId = int.Parse(userIdClaim.Value);
+        var storedToken = await _repo.GetRefreshTokenAsync(userId);
+
+        if (storedToken != refreshToken)
+            return Unauthorized("Refresh token non valido");
+
+        var user = await _repo.GetByIdAsync(userId);
+        if (user == null) return Unauthorized();
+
+        var newJwt = _auth.GenerateJwtToken(user);
+
+        return Ok(new { token = newJwt });
+    }
+
 }

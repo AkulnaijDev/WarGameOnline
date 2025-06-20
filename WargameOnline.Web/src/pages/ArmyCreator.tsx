@@ -14,6 +14,7 @@ import {
 } from '../api/armyApi'
 import { Unit, UnitWithCount, SavedArmy } from '../types/types'
 import Sidebar from '../components/Sidebar'
+import { useAuth } from '../context/AuthContext'
 
 type Mode = 'start' | 'create' | 'edit'
 type Faction = {
@@ -35,7 +36,6 @@ type Faction = {
 
 export default function ArmyCreator() {
   const [mode, setMode] = useState<Mode>('start')
-  const token = localStorage.getItem('token') || ''
 
   const [rawData, setRawData] = useState<any>({})
   const [game, setGame] = useState('')
@@ -45,6 +45,7 @@ export default function ArmyCreator() {
   const [selectedUnitIndex, setSelectedUnitIndex] = useState<number | null>(null)
   const [savedArmies, setSavedArmies] = useState<SavedArmy[]>([])
   const [selectedArmyId, setSelectedArmyId] = useState<string | null>(null)
+  const { token, setToken } = useAuth()
 
   useEffect(() => {
     fetch('/data/games.json')
@@ -55,7 +56,7 @@ export default function ArmyCreator() {
 
   useEffect(() => {
     if (!token || !game) return
-    fetchArmiesByGame(game, token).then(setSavedArmies).catch(console.error)
+    fetchArmiesByGame(game, token, setToken).then(setSavedArmies).catch(console.error)
   }, [game])
 
   const factions: [string, Faction][] = game ? Object.entries(rawData[game] || {}) : []

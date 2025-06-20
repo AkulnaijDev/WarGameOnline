@@ -1,43 +1,45 @@
-// src/api/armyApi.ts
-
 import { SavedArmy } from '../types/types'
+import { API } from '../lib/api'
+import { fetchWithAuth } from '../utils/fetchWithAuth'
 
-const BASE_URL = '/api/armies'
-
-export const fetchArmiesByGame = async (game: string, token: string) => {
-  const res = await fetch(`${BASE_URL}?game=${encodeURIComponent(game)}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
-  return res.json() as Promise<SavedArmy[]>
+export const fetchArmiesByGame = (
+  game: string,
+  token: string | null,
+  setToken: (t: string) => void
+) => {
+  if (!token) throw new Error('Token mancante')
+  return fetchWithAuth<SavedArmy[]>(
+    `${API.armies}?game=${encodeURIComponent(game)}`,
+    {},
+    token,
+    setToken
+  )
 }
 
-export const fetchArmyById = async (id: string, token: string) => {
-  const res = await fetch(`${BASE_URL}/${id}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
-  return res.json() as Promise<SavedArmy>
+export const fetchArmyById = (id: string, token: string | null) => {
+  if (!token) throw new Error('Token mancante')
+  return fetchWithAuth<SavedArmy>(`${API.armies}/${id}`, {}, token)
 }
 
-export const saveArmy = async (army: Partial<SavedArmy>, token: string) => {
-  await fetch(BASE_URL, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
+export const saveArmy = (army: Partial<SavedArmy>, token: string | null) => {
+  if (!token) throw new Error('Token mancante')
+  return fetchWithAuth<void>(
+    API.armies,
+    {
+      method: 'POST',
+      body: JSON.stringify(army),
     },
-    body: JSON.stringify(army),
-  })
+    token
+  )
 }
 
-export const deleteArmy = async (id: string, token: string) => {
-  await fetch(`${BASE_URL}/${id}`, {
-    method: 'DELETE',
-    headers: {
-      Authorization: `Bearer ${token}`,
+export const deleteArmy = (id: string, token: string | null) => {
+  if (!token) throw new Error('Token mancante')
+  return fetchWithAuth<void>(
+    `${API.armies}/${id}`,
+    {
+      method: 'DELETE',
     },
-  })
+    token
+  )
 }

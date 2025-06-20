@@ -53,6 +53,8 @@ builder.Services.AddSignalR();
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IFriendRepository, FriendRepository>();
+builder.Services.AddScoped<IArmyRepository, ArmyRepository>();
+
 builder.Services.AddSingleton<IOnlineUserTracker, InMemoryOnlineUserTracker>();
 
 
