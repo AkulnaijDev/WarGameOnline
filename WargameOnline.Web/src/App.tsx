@@ -8,6 +8,7 @@ import HomePage from './pages/HomePage'
 import { FriendsProvider, useFriends } from './context/FriendsContext'
 import FriendsSidebar from './components/FriendsSidebar'
 import ChatWindow from './components/ChatWindow'
+import ArmyCreator from './pages/ArmyCreator'
 
 function ProtectedRoute({ children }: { children: JSX.Element }) {
   const { token } = useAuth()
@@ -44,6 +45,7 @@ function MainApp() {
 
           <Routes>
             <Route path="/auth" element={<AuthPage />} />
+            <Route path="/armyCreator" element={<ArmyCreator />} />
             <Route
               path="/home"
               element={

@@ -1,0 +1,75 @@
+{
+  "Fantasy Wars": {
+    "goblinoide": {
+      "displayName": "Gobelini",
+      "units": [
+        {
+          "name": "Schiavetto",
+          "points": 15,
+          "stats": { "attack": 1, "defense": 2 },
+          "rules": ["codardo"],
+          "description": "Un goblin armato di bastone. Serve come carne da macello."
+        },
+        {
+          "name": "Ogro Ruttante",
+          "points": 60,
+          "stats": { "attack": 5, "defense": 4 },
+          "rules": ["furioso", "grande"],
+          "description": "Bestione robusto con un alito devastante."
+        },
+        {
+          "name": "Generale Goblin",
+          "points": 90,
+          "stats": { "leadership": 4 },
+          "rules": ["stratega"],
+          "description": "Il capo delle truppe gobline."
+        },
+        {
+          "name": "Drago Verde",
+          "points": 200,
+          "stats": { "volo": true, "soffio": "fuoco" },
+          "rules": ["mostro", "volante"],
+          "description": "Una creatura devastante dalle montagne nebbiose."
+        },
+        {
+          "name": "Scudiere",
+          "points": 30,
+          "stats": { "difesa": 3 },
+          "description": "Fanteria di supporto, dotata di scudo e speranza."
+        }
+      ],
+      "constraintsByThreshold": {
+        "step": 1000,
+        "rules": {
+          "Generale Goblin": { "minFixed": 1, "maxFixed": 1 },
+          "Drago Verde": { "max": 2 },
+          "Scudiere": { "min": 3 }
+        }
+      }
+    }
+  },
+  "Star Conflict": {
+    "xenon": {
+      "displayName": "XEN-On",
+      "units": [
+        {
+          "name": "Drone Esploratore",
+          "points": 25,
+          "systems": { "scan": 4, "cloak": 2 },
+          "description": "Scout meccanico dotato di mimetismo leggero."
+        },
+        {
+          "name": "Battlesuit Sigma",
+          "points": 80,
+          "systems": { "armor": 5, "plasma": 4 },
+          "rules": ["pesante", "avanzato"],
+          "description": "Unità da guerra pesante della stirpe Xen."
+        }
+      ],
+      "constraints": {
+        "maxPoints": 250,
+        "minUnits": 1
+      }
+    }
+  }
+}

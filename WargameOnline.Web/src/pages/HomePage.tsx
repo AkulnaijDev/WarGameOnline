@@ -1,6 +1,7 @@
 import { useAuth } from '../context/AuthContext'
 import { useTranslation } from 'react-i18next'
 import { jwtDecode } from 'jwt-decode'
+import { useNavigate } from 'react-router-dom'
 
 type JwtPayload = {
   [key: string]: string
@@ -9,7 +10,7 @@ type JwtPayload = {
 export default function HomePage() {
   const { token, logout } = useAuth()
   const { t } = useTranslation()
-
+const navigate = useNavigate()
   let username = 'UnknownUser'
 
   if (token) {
@@ -26,7 +27,7 @@ export default function HomePage() {
         <div>
           <h2 className="text-xl font-bold text-primary">⚔ WarGame Online</h2>
           <nav className="space-y-2 text-sm font-medium mt-4">
-            <a href="#" className="block p-2 rounded hover:bg-gray-700">{t('armyCreator')}</a>
+            <a onClick={() => navigate('/armyCreator')} className="block p-2 rounded hover:bg-gray-700">{t('armyCreator')}</a>
             <a href="#" className="block p-2 rounded hover:bg-gray-700">{t('play')}</a>
             <a href="#" className="block p-2 rounded hover:bg-gray-700">{t('settings')}</a>
           </nav>
