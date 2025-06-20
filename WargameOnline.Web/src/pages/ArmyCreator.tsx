@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react'
+import ArmyStartMenu from '../components/ArmyStartMenu'
 import ArmyHeader from '../components/ArmyHeader'
+import ArmySidebar from '../components/ArmySidebar'
 import FactionSelector from '../components/FactionSelector'
 import UnitTable from '../components/UnitTable'
 import UnitDetails from '../components/UnitDetails'
-import ArmySidebar from '../components/ArmySidebar'
 import { jsPDF } from 'jspdf'
 import {
   fetchArmiesByGame,
@@ -13,13 +14,11 @@ import {
 } from '../api/armyApi'
 import { Unit, UnitWithCount, SavedArmy } from '../types/types'
 
+type Mode = 'start' | 'create' | 'edit'
 type Faction = {
   displayName?: string
   units: Unit[]
-  constraints?: {
-    maxPoints?: number
-    minUnits?: number
-  }
+  constraints?: { maxPoints?: number; minUnits?: number }
   constraintsByThreshold?: {
     step: number
     rules: {
@@ -34,7 +33,9 @@ type Faction = {
 }
 
 export default function ArmyCreator() {
+  const [mode, setMode] = useState<Mode>('start')
   const token = localStorage.getItem('token') || ''
+
   const [rawData, setRawData] = useState<any>({})
   const [game, setGame] = useState('')
   const [faction, setFaction] = useState('')
@@ -43,6 +44,18 @@ export default function ArmyCreator() {
   const [selectedUnitIndex, setSelectedUnitIndex] = useState<number | null>(null)
   const [savedArmies, setSavedArmies] = useState<SavedArmy[]>([])
   const [selectedArmyId, setSelectedArmyId] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetch('/data/games.json')
+      .then(res => res.json())
+      .then(setRawData)
+      .catch(console.error)
+  }, [])
+
+  useEffect(() => {
+    if (!token || !game) return
+    fetchArmiesByGame(game, token).then(setSavedArmies).catch(console.error)
+  }, [game])
 
   const factions: [string, Faction][] = game ? Object.entries(rawData[game] || {}) : []
   const selectedFaction: Faction | undefined = factions.find(([key]) => key === faction)?.[1]
@@ -78,6 +91,15 @@ export default function ArmyCreator() {
 
   const dynamicValid = violations.length === 0
 
+  const resetState = () => {
+    setGame('')
+    setFaction('')
+    setArmyName('')
+    setSelectedUnits([])
+    setSelectedUnitIndex(null)
+    setSelectedArmyId(null)
+  }
+
   const handleLoadArmy = async (id: string) => {
     const data = await fetchArmyById(id, token)
     setSelectedArmyId(data.id)
@@ -85,6 +107,7 @@ export default function ArmyCreator() {
     setGame(data.game)
     setFaction(data.faction)
     setSelectedUnits(data.units)
+    setMode('edit')
   }
 
   const handleSaveArmy = async () => {
@@ -97,6 +120,7 @@ export default function ArmyCreator() {
     setArmyName('')
     setSelectedUnits([])
     setSavedArmies([])
+    setMode('start')
   }
 
   const handleDeleteArmy = async () => {
@@ -106,6 +130,7 @@ export default function ArmyCreator() {
     setArmyName('')
     setSelectedUnits([])
     setSavedArmies([])
+    setMode('start')
   }
 
   const handleChangeCount = (name: string, delta: number) => {
@@ -156,21 +181,27 @@ export default function ArmyCreator() {
     doc.save(`${armyName || 'army-list'}.pdf`)
   }
 
-  useEffect(() => {
-    fetch('/data/games.json')
-      .then(res => res.json())
-      .then(setRawData)
-      .catch(console.error)
-  }, [])
-
-  useEffect(() => {
-    if (!token || !game) return
-    fetchArmiesByGame(game, token).then(setSavedArmies).catch(console.error)
-  }, [game])
+  if (mode === 'start') {
+    return (
+      <ArmyStartMenu
+        canEdit={savedArmies.length > 0}
+        onCreate={() => {
+          resetState()
+          setMode('create')
+        }}
+        onEdit={() => setMode('edit')}
+      />
+    )
+  }
 
   return (
     <div className="min-h-screen bg-bg text-white p-6 flex flex-col items-center">
-      <h1 className="text-2xl font-bold mb-4">🛡️ Army Creator</h1>
+      <button
+        onClick={() => setMode('start')}
+        className="self-start mb-4 text-sm text-slate-400 hover:underline"
+      >
+        ← Torna al menu
+      </button>
 
       <ArmyHeader
         armyName={armyName}
