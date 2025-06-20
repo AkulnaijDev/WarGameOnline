@@ -14,27 +14,27 @@ export default function FriendsSidebar() {
   const pendingCount = pendingUsers.length
 
   const handleAdd = async () => {
-  if (!username.trim() || !token) return
+    if (!username.trim() || !token) return
 
-  try {
-    const res = await fetch(API.friendsRequest, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ username }),
-    })
+    try {
+      const res = await fetch(API.friendsRequest, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ username }),
+      })
 
-    await res.text()
-    setFeedback(res.ok ? `✅ ${t('friendshipRequestSent')}` : `❌ ${t('friendshipRequestError')}`)
-    if (res.ok) setUsername('')
-  } catch {
-    setFeedback('❌ Errore di rete.')
+      await res.text()
+      setFeedback(res.ok ? `✅ ${t('friendshipRequestSent')}` : `❌ ${t('friendshipRequestError')}`)
+      if (res.ok) setUsername('')
+    } catch {
+      setFeedback('❌ Errore di rete.')
+    }
+
+    setTimeout(() => setFeedback(''), 4000)
   }
-
-  setTimeout(() => setFeedback(''), 4000)
-}
 
 
   const respond = async (username: string, action: 'Accept' | 'Reject') => {
@@ -49,7 +49,7 @@ export default function FriendsSidebar() {
         body: JSON.stringify({ username, action }),
       })
       setPendingUsers(prev => prev.filter(p => p.username !== username))
-    } catch {}
+    } catch { }
   }
 
   const handleRemove = async (id: number) => {
@@ -116,12 +116,20 @@ export default function FriendsSidebar() {
             </span>
             <div className="flex items-center gap-2 text-sm">
               <button
-                onClick={() => openChat(friend)}
+                onClick={() => {
+                  if (!friend.username || friend.username.startsWith('User#')) return // blocco sicurezza
+                  openChat({
+                    id: friend.id,
+                    username: friend.username,
+                    isOnline: !!friend.isOnline,
+                  })
+                }}
                 title={t('openChat')}
                 className="hover:text-blue-400"
               >
                 ✉️
               </button>
+
               <button
                 onClick={() => handleRemove(friend.id)}
                 title={t('removeFriend')}
@@ -154,8 +162,8 @@ export default function FriendsSidebar() {
       {feedback && (
         <p
           className={`mt-1 mx-1 px-2 py-1 text-xs rounded ${feedback.startsWith('✅')
-              ? 'bg-green-800 text-green-300'
-              : 'bg-red-800 text-red-300'
+            ? 'bg-green-800 text-green-300'
+            : 'bg-red-800 text-red-300'
             }`}
         >
           {feedback}

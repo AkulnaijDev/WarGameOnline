@@ -47,6 +47,8 @@ export const useFriends = () => {
   return context
 }
 
+// ...import e types invariati...
+
 export const FriendsProvider = ({
   token,
   currentUserId,
@@ -61,39 +63,41 @@ export const FriendsProvider = ({
   const [messages, setMessages] = useState<{ [userId: number]: Message[] }>({})
   const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([])
 
-  // 🔁 Carica amici al login
+  // ✅ Carica amici all’avvio
   useEffect(() => {
     if (!token || !currentUserId) return
 
-    const fetchFriends = async () => {
-      try {
-        console.log('🔁 chiamata a /api/friends in partenza...')
-        const res = await fetch(API.friends, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        if (res.ok) {
-          const data = await res.json()
-          setFriends(data.filter((f: Friend) => f.id !== currentUserId))
-        } else {
-          console.warn('❌ errore nella fetch friends:', res.status)
-        }
-      } catch (err) {
-        console.error('❌ Friends fetching error:', err)
-      }
-    }
-
-    fetchFriends()
+    fetch(API.friends, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(res => res.json())
+      .then((data: Friend[]) =>
+        setFriends(data.filter((f: Friend) => f.id !== currentUserId))
+      )
+      .catch(console.error)
   }, [token, currentUserId])
+
+  // ✅ Carica richieste pending all’avvio
+  useEffect(() => {
+    if (!token) return
+
+    fetch(API.friendsPending, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(res => res.json())
+      .then((pending: PendingUser[]) => {
+        setPendingUsers(pending)
+      })
+      .catch(console.error)
+  }, [token])
 
   const updateOnlineStatus = (id: number, online: boolean) => {
     setFriends(prev =>
-      prev.map(f =>
-        f.id === id ? { ...f, isOnline: online } : f
-      )
+      prev.map(f => f.id === id ? { ...f, isOnline: online } : f)
     )
   }
 
-  // 🔄 Inizializza SignalR
+  // 🔌 Inizializza SignalR
   useEffect(() => {
     if (!token || !currentUserId) return
 
@@ -114,7 +118,6 @@ export const FriendsProvider = ({
         const sender = friends.find(f => f.id === fromId)
 
         if (!sender) {
-          // ⚠️ Se non lo conosci, forza un refresh amici
           fetch(API.friends, {
             headers: { Authorization: `Bearer ${token}` }
           })
@@ -131,7 +134,6 @@ export const FriendsProvider = ({
             return sender
           })
         }
-
       },
       updateOnlineStatus,
       {
@@ -144,10 +146,10 @@ export const FriendsProvider = ({
         onFriendRequestAccepted: (newFriend: Friend) => {
           setFriends(prev => [...prev, newFriend])
         },
-        onFriendRemoved: (removedId) => {
+        onFriendRemoved: (removedId: number) => {
           setFriends(prev => prev.filter(f => f.id !== removedId))
           setActiveChat(prev => (prev && prev.id === removedId ? null : prev))
-        }
+        },
       }
     )
   }, [token, currentUserId, friends])
@@ -174,3 +176,4 @@ export const FriendsProvider = ({
     </FriendsContext.Provider>
   )
 }
+
