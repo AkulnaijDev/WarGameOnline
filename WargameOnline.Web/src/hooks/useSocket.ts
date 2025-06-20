@@ -22,7 +22,10 @@ export function initializeSocket(
   extraHandlers?: {
     onFriendRemoved?: (id: number) => void
     onFriendRequestReceived?: (user: { id: number; username: string }) => void
-    onFriendRequestAccepted?: (friend: { id: number; username: string; isOnline: boolean }) => void
+    onFriendRequestAccepted?: (friend: { id: number; username: string; isOnline: boolean }) => void,
+    onFriendOnline?: (id: number) => void
+    onFriendOffline?: (id: number) => void
+
   }
 ) {
   if (typeof window === 'undefined') return
@@ -43,7 +46,7 @@ export function initializeSocket(
     onMessage(fromId, text)
   })
   connection.on('FriendRemoved', (id) => {
-  // Rimuove amico localmente
+    // Rimuove amico localmente
     extraHandlers?.onFriendRemoved?.(id)
   })
 

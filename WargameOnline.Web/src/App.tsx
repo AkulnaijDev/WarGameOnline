@@ -1,9 +1,11 @@
+// App.tsx
+
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import LanguageSelector from './components/LanguageSelector'
 import AuthPage from './pages/AuthPage'
 import HomePage from './pages/HomePage'
-import { FriendsProvider } from './context/FriendsContext'
+import { FriendsProvider, useFriends } from './context/FriendsContext'
 import FriendsSidebar from './components/FriendsSidebar'
 import ChatWindow from './components/ChatWindow'
 
@@ -12,45 +14,59 @@ function ProtectedRoute({ children }: { children: JSX.Element }) {
   return token ? children : <Navigate to="/auth" replace />
 }
 
+function ChatLayer() {
+  const { activeChats, closeChat } = useFriends()
+
+  return (
+    <>
+      {activeChats.map(friend => (
+        <ChatWindow
+          key={friend.id}
+          chatUser={friend}
+          onClose={() => closeChat(friend.id)}
+        />
+
+      ))}
+    </>
+  )
+}
+
 function MainApp() {
   const { token, currentUserId } = useAuth()
 
-  return (
-    token && currentUserId !== null ? (
-      <FriendsProvider token={token} currentUserId={currentUserId}>
-        <BrowserRouter>
-          <div className="relative min-h-screen bg-bg text-white">
-            <div className="absolute top-4 right-4 z-50">
-              <LanguageSelector />
-            </div>
-
-            <Routes>
-              <Route path="/auth" element={<AuthPage />} />
-              <Route
-                path="/home"
-                element={
-                  <ProtectedRoute>
-                    <HomePage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route path="*" element={<Navigate to="/auth" replace />} />
-            </Routes>
-
-            <FriendsSidebar />
-            <ChatWindow />
-          </div>
-        </BrowserRouter>
-      </FriendsProvider>
-    ) : (
-      // solo login
+  return token && currentUserId !== null ? (
+    <FriendsProvider token={token} currentUserId={currentUserId}>
       <BrowserRouter>
-        <Routes>
-          <Route path="/auth" element={<AuthPage />} />
-          <Route path="*" element={<Navigate to="/auth" replace />} />
-        </Routes>
+        <div className="relative min-h-screen bg-bg text-white">
+          <div className="absolute top-4 right-4 z-50">
+            <LanguageSelector />
+          </div>
+
+          <Routes>
+            <Route path="/auth" element={<AuthPage />} />
+            <Route
+              path="/home"
+              element={
+                <ProtectedRoute>
+                  <HomePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="*" element={<Navigate to="/auth" replace />} />
+          </Routes>
+
+          <FriendsSidebar />
+          <ChatLayer />
+        </div>
       </BrowserRouter>
-    )
+    </FriendsProvider>
+  ) : (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/auth" element={<AuthPage />} />
+        <Route path="*" element={<Navigate to="/auth" replace />} />
+      </Routes>
+    </BrowserRouter>
   )
 }
 

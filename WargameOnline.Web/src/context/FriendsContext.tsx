@@ -1,15 +1,15 @@
 import {
   createContext,
   useState,
+  useRef,
   useContext,
   useEffect,
   ReactNode,
 } from 'react'
-
 import { initializeSocket } from '../hooks/useSocket'
 import { API } from '../lib/api'
 
-type Friend = {
+export type Friend = {
   id: number
   username: string
   isOnline: boolean
@@ -28,10 +28,10 @@ type Message = {
 
 type FriendsContextType = {
   friends: Friend[]
-  activeChat: Friend | null
-  setActiveChat: React.Dispatch<React.SetStateAction<Friend | null>>
+  activeChats: Friend[]
   openChat: (f: Friend) => void
-  closeChat: () => void
+  closeChat: (id: number) => void
+  setActiveChats: React.Dispatch<React.SetStateAction<Friend[]>>
   messages: { [userId: number]: Message[] }
   setMessages: React.Dispatch<React.SetStateAction<{ [userId: number]: Message[] }>>
   currentUserId: number
@@ -47,8 +47,6 @@ export const useFriends = () => {
   return context
 }
 
-// ...import e types invariati...
-
 export const FriendsProvider = ({
   token,
   currentUserId,
@@ -59,47 +57,47 @@ export const FriendsProvider = ({
   children: ReactNode
 }) => {
   const [friends, setFriends] = useState<Friend[]>([])
-  const [activeChat, setActiveChat] = useState<Friend | null>(null)
   const [messages, setMessages] = useState<{ [userId: number]: Message[] }>({})
   const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([])
+  const [activeChats, setActiveChats] = useState<Friend[]>([])
 
-  // ✅ Carica amici all’avvio
+  const friendsRef = useRef<Friend[]>([])
   useEffect(() => {
-    if (!token || !currentUserId) return
+    friendsRef.current = friends
+  }, [friends])
+
+  const openChat = (friend: Friend) => {
+    setActiveChats(prev =>
+      prev.find(f => f.id === friend.id) ? prev : [...prev, friend]
+    )
+  }
+
+  const closeChat = (id: number) => {
+    setActiveChats(prev => prev.filter(c => c.id !== id))
+  }
+
+  useEffect(() => {
+    if (!token) return
 
     fetch(API.friends, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(res => res.json())
       .then((data: Friend[]) =>
-        setFriends(data.filter((f: Friend) => f.id !== currentUserId))
+        setFriends(data.filter(f => f.id !== currentUserId))
       )
       .catch(console.error)
-  }, [token, currentUserId])
-
-  // ✅ Carica richieste pending all’avvio
-  useEffect(() => {
-    if (!token) return
 
     fetch(API.friendsPending, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(res => res.json())
-      .then((pending: PendingUser[]) => {
-        setPendingUsers(pending)
-      })
+      .then(setPendingUsers)
       .catch(console.error)
-  }, [token])
+  }, [token, currentUserId])
 
-  const updateOnlineStatus = (id: number, online: boolean) => {
-    setFriends(prev =>
-      prev.map(f => f.id === id ? { ...f, isOnline: online } : f)
-    )
-  }
-
-  // 🔌 Inizializza SignalR
   useEffect(() => {
-    if (!token || !currentUserId) return
+    if (!token) return
 
     initializeSocket(
       token,
@@ -115,27 +113,16 @@ export const FriendsProvider = ({
           [fromId]: [...(prev[fromId] || []), newMsg],
         }))
 
-        const sender = friends.find(f => f.id === fromId)
-
-        if (!sender) {
-          fetch(API.friends, {
-            headers: { Authorization: `Bearer ${token}` }
-          })
-            .then(res => res.json())
-            .then((updated: Friend[]) => {
-              setFriends(updated.filter(f => f.id !== currentUserId))
-              const s = updated.find(f => f.id === fromId)
-              if (s) setActiveChat(s)
-            })
-            .catch(console.error)
-        } else {
-          setActiveChat(prev => {
-            if (prev && prev.id === fromId) return prev
-            return sender
-          })
+        const sender = friendsRef.current.find(f => f.id === fromId)
+        if (sender) {
+          openChat(sender)
         }
       },
-      updateOnlineStatus,
+      (id, online) => {
+        setFriends(prev =>
+          prev.map(f => f.id === id ? { ...f, isOnline: online } : f)
+        )
+      },
       {
         onFriendRequestReceived: (pending: PendingUser) => {
           setPendingUsers(prev => [
@@ -146,23 +133,30 @@ export const FriendsProvider = ({
         onFriendRequestAccepted: (newFriend: Friend) => {
           setFriends(prev => [...prev, newFriend])
         },
-        onFriendRemoved: (removedId: number) => {
-          setFriends(prev => prev.filter(f => f.id !== removedId))
-          setActiveChat(prev => (prev && prev.id === removedId ? null : prev))
+        onFriendRemoved: (id: number) => {
+          setFriends(prev => prev.filter(f => f.id !== id))
+          setActiveChats(prev => prev.filter(c => c.id !== id))
+        },
+        onFriendOnline: (id: number) => {
+          setFriends(prev =>
+            prev.map(f => f.id === id ? { ...f, isOnline: true } : f)
+          )
+        },
+        onFriendOffline: (id: number) => {
+          setFriends(prev =>
+            prev.map(f => f.id === id ? { ...f, isOnline: false } : f)
+          )
         },
       }
     )
-  }, [token, currentUserId, friends])
-
-  const openChat = (friend: Friend) => setActiveChat(friend)
-  const closeChat = () => setActiveChat(null)
+  }, [token])
 
   return (
     <FriendsContext.Provider
       value={{
         friends,
-        activeChat,
-        setActiveChat,
+        activeChats,
+        setActiveChats,
         openChat,
         closeChat,
         messages,
@@ -176,4 +170,3 @@ export const FriendsProvider = ({
     </FriendsContext.Provider>
   )
 }
-

@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { API } from '../lib/api'
 
 export default function FriendsSidebar() {
-  const { friends, openChat, activeChat, setActiveChat, pendingUsers, setPendingUsers } = useFriends()
+  const { friends, openChat, closeChat, pendingUsers, setPendingUsers } = useFriends()
   const { token, isAuthenticated } = useAuth()
   const [username, setUsername] = useState('')
   const [feedback, setFeedback] = useState('')
@@ -59,9 +59,9 @@ export default function FriendsSidebar() {
       headers: { Authorization: `Bearer ${token}` },
     })
     // Chiude chat se era aperta con l'amico eliminato
-    if (activeChat?.id === id) {
-      setActiveChat(null)
-    }
+    closeChat(id)
+
+    
   }
 
   if (!isAuthenticated) return null
