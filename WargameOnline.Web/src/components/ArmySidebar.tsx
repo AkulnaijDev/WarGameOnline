@@ -110,7 +110,7 @@ export default function ArmySidebar({
             className="py-2 w-full bg-green-600 hover:bg-green-500 text-white text-sm rounded disabled:opacity-50"
             disabled={isSaveDisabled}
           >
-            💾 {selectedArmyId ? 'Update Army' : 'Save Army'}
+             {selectedArmyId ? '💾 Save Changes' : '💾 Save Army'}
           </button>
 
           {selectedArmyId && (

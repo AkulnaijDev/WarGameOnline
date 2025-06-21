@@ -69,12 +69,7 @@ export default function ArmyCreator() {
 
   function validateDynamic(): string[] {
     const rules = selectedFactionRules.rules || {}
-    for (const [unitName, rule] of Object.entries(rules) as [
-      string,
-      { min?: number; max?: number; minFixed?: number; maxFixed?: number }
-    ][]) {
-      // ora TypeScript conosce il tipo di rule ✅
-    }
+    
     const violations: string[] = []
     for (const [unitName, rule] of Object.entries(rules)) {
       const found = selectedUnits.find(u => u.name === unitName)
@@ -139,12 +134,12 @@ export default function ArmyCreator() {
     }
 
     try {
-      await saveArmy(
-        { ...(payload as any), id: selectedArmyId ?? undefined },
+      const response = await saveArmy(
+        { ...payload, id: selectedArmyId ?? undefined },
         token
       )
-      resetState()
-      setMode('start')
+      setSelectedArmyId(response.id)
+      setMode('edit')
     } catch (err) {
       console.error('Errore salvataggio armata:', err)
     }

@@ -12,7 +12,7 @@ namespace WargameOnline.Api.Controllers;
 public class ArmiesController : ControllerBase
 {
     private readonly IArmyRepository _armyRepository;
-
+   
     public ArmiesController(IArmyRepository armyRepository)
     {
         _armyRepository = armyRepository;
@@ -45,28 +45,21 @@ public class ArmiesController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateArmy([FromBody] Army army)
+    public async Task<IActionResult> SaveArmy([FromBody] Army army)
     {
         var userId = GetUserId();
         army.UserId = userId;
 
-        var newId = await _armyRepository.CreateAsync(army);
-        return CreatedAtAction(nameof(GetArmyById), new { id = newId }, army);
-    }
-
-    [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateArmy(int id, [FromBody] Army updated)
-    {
-        var userId = GetUserId();
-        var existing = await _armyRepository.GetByIdAsync(id);
-
-        if (existing == null || existing.UserId != userId)
-            return Forbid();
-
-        updated.Id = id;
-        updated.UserId = userId;
-        await _armyRepository.UpdateAsync(updated);
-        return NoContent();
+        if (army.Id > 0)
+        {
+            await _armyRepository.UpdateAsync(army);
+            return Ok(new { id = army.Id });
+        }
+        else
+        {
+            var newId = await _armyRepository.CreateAsync(army);
+            return Ok(new { id = newId });
+        }
     }
 
     [HttpDelete("{id}")]

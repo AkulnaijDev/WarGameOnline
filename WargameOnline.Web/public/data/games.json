@@ -10,6 +10,7 @@
         "gameId": 1,
         "units": [
           {
+            "id": 1,
             "name": "Schiavetto",
             "points": 15,
             "stats": { "attack": 1, "defense": 2 },
@@ -17,6 +18,7 @@
             "description": "Un goblin armato di bastone. Serve come carne da macello."
           },
           {
+            "id": 2,
             "name": "Ogro Ruttante",
             "points": 60,
             "stats": { "attack": 5, "defense": 4 },
@@ -24,6 +26,7 @@
             "description": "Bestione robusto con un alito devastante."
           },
           {
+            "id": 3,
             "name": "Generale Goblin",
             "points": 90,
             "stats": { "leadership": 4 },
@@ -31,6 +34,7 @@
             "description": "Il capo delle truppe gobline."
           },
           {
+            "id": 4,
             "name": "Drago Verde",
             "points": 200,
             "stats": { "volo": true, "soffio": "fuoco" },
@@ -38,6 +42,7 @@
             "description": "Una creatura devastante dalle montagne nebbiose."
           },
           {
+            "id": 5,
             "name": "Scudiere",
             "points": 30,
             "stats": { "difesa": 3 },
@@ -66,12 +71,14 @@
         "gameId": 2,
         "units": [
           {
+            "id": 6,
             "name": "Drone Esploratore",
             "points": 25,
             "systems": { "scan": 4, "cloak": 2 },
             "description": "Scout meccanico dotato di mimetismo leggero."
           },
           {
+            "id": 7,
             "name": "Battlesuit Sigma",
             "points": 80,
             "systems": { "armor": 5, "plasma": 4 },

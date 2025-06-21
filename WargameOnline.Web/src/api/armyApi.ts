@@ -1,7 +1,7 @@
 import { SavedArmy } from '../types/types'
 import { API } from '../lib/api'
 import { fetchWithAuth } from '../utils/fetchWithAuth'
-import { ArmyInput, ArmySummary, Army } from '../types/types'
+import { ArmyInput, ArmySummary, Army, ArmyInputWithId } from '../types/types'
 
 export const fetchArmiesByGame = (
   game: string,
@@ -27,17 +27,27 @@ export const fetchArmyById = (id: number, token: string | null) => {
   return fetchWithAuth<Army>(`${API.armies}/${id}`, {}, token)
 }
 
-export const saveArmy = (army: ArmyInput, token: string | null) => {
+export const saveArmy = async (
+  army: ArmyInputWithId,
+  token: string | null
+): Promise<{ id: number }> => {
   if (!token) throw new Error('Token mancante');
-  return fetchWithAuth<void>(
-    API.armies,
-    {
-      method: 'POST',
-      body: JSON.stringify(army)
+
+  const response = await fetch(API.armies, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
     },
-    token
-  )
+    body: JSON.stringify(army)
+  });
+
+  if (!response.ok) throw new Error('Errore salvataggio armata');
+
+  return await response.json(); // { id: 123 }
 }
+
+
 
 export const updateArmy = (army: ArmyInput & { id: number }, token: string | null) => {
   if (!token) throw new Error('Token mancante');

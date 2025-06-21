@@ -50,6 +50,8 @@ export type Unit = {
 export type UnitWithCount = Unit & {
   count: number
 }
+export type ArmyInputWithId = ArmyInput & { id?: number }
+
 
 export type ArmyInput = {
   name: string
