@@ -179,8 +179,12 @@ export default function ArmyCreator() {
     if (!selectedArmyId) return
     try {
       await deleteArmy(selectedArmyId, token)
-      resetState()
+      setSelectedArmyId(null)
+      setSelectedUnits([])
+      setArmyName('')
       setMode('start')
+      const updatedArmies = await fetchArmies(token)
+      setSavedArmies(updatedArmies)
     } catch (err) {
       console.error('Errore eliminazione armata:', err)
     }
