@@ -50,9 +50,18 @@ export default function ArmyCreator() {
   }, []);
 
   useEffect(() => {
-    if (!token) return;
-    fetchArmies(token).then(setSavedArmies).catch(console.error);
+    if (token) {
+      fetchArmies(token)
+        .then(setSavedArmies)
+        .catch(() => console.error(t("fetchArmiesFailed")));
+    }
   }, [token]);
+
+  useEffect(() => {
+    if (mode === "edit" && savedArmies.length > 0 && selectedArmyId == null) {
+      setSelectedArmyId(savedArmies[0].id);
+    }
+  }, [mode, savedArmies]);
 
   const allGames: Game[] = Object.values(rawData) as Game[];
   const units: Unit[] = faction?.units || [];
@@ -129,14 +138,25 @@ export default function ArmyCreator() {
 
   const handleLoadArmy = async (id: number) => {
     try {
+      console.log("🧭 Carico armata con ID:", id);
+
       const data = await fetchArmyById(id, token);
+
       const selectedGame = allGames.find((g) => g.id === data.gameId) || null;
       const selectedFaction =
         selectedGame?.factions?.find((f) => f.id === data.factionId) || null;
 
+      if (!selectedGame || !selectedFaction) {
+        console.error("⚠️ Game o fazione non trovati:", {
+          gameId: data.gameId,
+          factionId: data.factionId,
+        });
+        throw new Error(t("gameOrFactionNotFound"));
+      }
+
       const enrichedUnits: UnitWithCount[] = data.units
         .map((u) => {
-          const full = selectedFaction?.units.find(
+          const full = selectedFaction.units.find(
             (unit) => unit.id === u.unitId
           );
           if (!full) return null;
@@ -144,17 +164,20 @@ export default function ArmyCreator() {
         })
         .filter((x): x is UnitWithCount => x !== null);
 
-      if (!selectedGame || !selectedFaction)
-        throw new Error(t("gameOrFactionNotFound"));
-
       setSelectedArmyId(data.id);
       setArmyName(data.name);
       setGame(selectedGame);
       setFaction(selectedFaction);
       setSelectedUnits(enrichedUnits);
-      setMode("edit");
+
+      console.log("✅ Armata caricata:", {
+        name: data.name,
+        game: selectedGame.name,
+        faction: selectedFaction.name,
+        units: enrichedUnits.length,
+      });
     } catch (err) {
-      console.error(t("errorLoadingArmyList"), err);
+      console.error("❌ Errore durante il caricamento dell'armata:", err);
     }
   };
 
@@ -290,7 +313,14 @@ export default function ArmyCreator() {
     );
   }
 
-  if (mode === "edit" && !selectedArmyId) {
+  if (mode === "edit" && selectedArmyId === null) {
+    const armiesForSelection =
+      game && faction
+        ? savedArmies.filter(
+            (a) => a.gameId === game.id && a.factionId === faction.id
+          )
+        : [];
+
     return (
       <div className="min-h-screen flex flex-col sm:flex-row bg-bg text-white">
         <Sidebar />
@@ -302,17 +332,73 @@ export default function ArmyCreator() {
             {t("backToMenu")}
           </button>
 
-          <ArmyHeaderSavedArmies
-            game={game}
-            savedArmies={savedArmies}
-            selectedArmyId={selectedArmyId}
-            onSelectArmy={handleLoadArmy}
-            mode={mode}
-          />
+          {/* Step 1: Seleziona gioco */}
+          <select
+            value={game?.id ?? ""}
+            onChange={(e) => {
+              const g = allGames.find(
+                (game) => game.id === Number(e.target.value)
+              );
+              if (g) {
+                setGame(g);
+                setFaction(null);
+                setSelectedArmyId(null);
+                setArmyName("");
+                setSelectedUnits([]);
+              }
+            }}
+            className="w-full max-w-xs p-2 bg-slate-800 text-white rounded mt-2"
+          >
+            <option value="">{t("selectGame")}</option>
+            {allGames.map((g) => (
+              <option key={g.id} value={g.id}>
+                {g.name}
+              </option>
+            ))}
+          </select>
 
-          <div className="bg-yellow-700 text-white p-4 rounded mt-6 max-w-xl">
-            {t("noSelectedListAlert")}
-          </div>
+          {/* Step 2: Seleziona fazione */}
+          {game && (
+            <select
+              value={faction?.id ?? ""}
+              onChange={(e) => {
+                const f = game.factions.find(
+                  (fac) => fac.id === Number(e.target.value)
+                );
+                if (f) {
+                  setFaction(f);
+                  setSelectedArmyId(null);
+                  setArmyName("");
+                  setSelectedUnits([]);
+                }
+              }}
+              className="w-full max-w-xs p-2 bg-slate-800 text-white rounded mt-2"
+            >
+              <option value="">{t("chooseFaction")}</option>
+              {game.factions.map((f) => (
+                <option key={f.id} value={f.id}>
+                  {f.name}
+                </option>
+              ))}
+            </select>
+          )}
+
+          {/* Step 3: Seleziona lista */}
+          {game && faction && (
+            <ArmyHeaderSavedArmies
+              game={game}
+              savedArmies={armiesForSelection}
+              selectedArmyId={null}
+              onSelectArmy={handleLoadArmy}
+              mode="edit"
+            />
+          )}
+
+          {!selectedArmyId && (
+            <div className="bg-yellow-700 text-white p-4 rounded mt-6 max-w-xl">
+              {t("noSelectedListAlert")}
+            </div>
+          )}
         </main>
       </div>
     );
@@ -329,40 +415,48 @@ export default function ArmyCreator() {
           {t("backToMenu")}
         </button>
 
-        <ArmyHeader
-          armyName={armyName}
-          setArmyName={setArmyName}
-          game={game}
-          setGame={(val) => {
-            setGame(val);
-            setFaction(null);
-            setSelectedUnits([]);
-            setSelectedArmyId(null);
-          }}
-          games={allGames}
-          savedArmies={
-            mode !== "create"
-              ? savedArmies.filter((a) => game && a.gameId === game.id)
-              : []
-          }
-          onSelectArmy={handleLoadArmy}
-        />
-
+        {selectedArmyId && (
+          <ArmyHeader
+            armyName={armyName}
+            setArmyName={setArmyName}
+            game={game}
+            setGame={(val) => {
+              if (mode !== "edit") {
+                setGame(val);
+                setFaction(null);
+                setSelectedUnits([]);
+                setSelectedArmyId(null);
+              }
+            }}
+            games={allGames}
+            readOnly={mode === "edit"}
+          />
+        )}
         {game && (
           <FactionSelector
             faction={faction}
             setFaction={(val) => {
-              setFaction(val);
-              setSelectedUnits([]);
-              setSelectedUnitIndex(null);
+              if (mode !== "edit") {
+                setFaction(val);
+                setSelectedUnits([]);
+                setSelectedUnitIndex(null);
+              }
             }}
-            factions={game.factions || []}
+            factions={game?.factions || []}
+            disabled={mode === "edit"}
           />
         )}
 
         <ArmyHeaderSavedArmies
           game={game}
-          savedArmies={savedArmies.filter((a) => game && a.gameId === game.id)}
+          savedArmies={
+            mode === "edit" && !game
+              ? savedArmies
+              : savedArmies.filter(
+                  (a) =>
+                    (game && a.gameId === game.id) || a.id === selectedArmyId
+                )
+          }
           selectedArmyId={selectedArmyId}
           onSelectArmy={handleLoadArmy}
           mode={mode}

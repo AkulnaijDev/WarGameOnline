@@ -16,29 +16,36 @@ export default function ArmyHeaderSavedArmies({
   onSelectArmy,
   mode,
 }: Props) {
-
   const { t } = useTranslation();
-  
+
+  const visibleArmies = savedArmies.filter(
+    (a) => !game || a.gameId === game.id || a.id === selectedArmyId
+  );
+
+  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const id = Number(e.target.value);
+    console.log("🧭 Dropdown selection changed to:", id);
+    if (id > 0) {
+      onSelectArmy(id);
+    }
+  };
+
   return (
     <div className="w-full max-w-2xl space-y-3">
-      {mode !== "create" && game && (
+      {mode !== "create" && (
         <select
           value={selectedArmyId ?? ""}
-          onChange={(e) => {
-            const id = Number(e.target.value);
-            if (id > 0) onSelectArmy(id);
-          }}
+          onChange={handleChange}
           className="w-full p-2 bg-slate-800 text-white rounded mt-2"
         >
-          {!selectedArmyId && <option value="">{t("loadSavedList")}</option>}
-
-          {savedArmies
-            .filter((a) => a.gameId === game.id)
-            .map((a) => (
-              <option key={a.id} value={a.id}>
-                {a.name} (ID: {a.id})
-              </option>
-            ))}
+          {!selectedArmyId && (
+            <option value="">{t("loadSavedList")}</option>
+          )}
+          {visibleArmies.map((a) => (
+            <option key={a.id} value={a.id}>
+              {a.name} (ID: {a.id})
+            </option>
+          ))}
         </select>
       )}
     </div>

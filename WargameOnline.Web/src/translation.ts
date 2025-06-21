@@ -5,9 +5,11 @@ i18n.use(initReactI18next).init({
   resources: {
     en: {
       translation: {
-        //armyApi.ts
+        //generic
         missingToken: "Missing token",
         errorSavingArmylist: "Error saving army list",
+        expiredSession: "Session expired",
+        nonJsonFormResponse: "Response is not JSON format",
 
         //sessionManager.ts
         impossibleRegenerateSession: "Impossibile rigenerare la sessione",
@@ -42,7 +44,7 @@ i18n.use(initReactI18next).init({
         armyCreatorTitle: "⚔️ Army Creator",
         whatDoYouWannaDo: "What do you want to do?",
         createNewArmyList: "➕ Create new army list",
-        editSavedArmyList: "🛠️ Edit army list salvata",
+        editSavedArmyList: "🛠️ Edit army list",
 
         //authTabs
         registrationCompleted: "Registration completed!",
@@ -126,17 +128,19 @@ i18n.use(initReactI18next).init({
         pdfUnitsSelected: "Units selected:",
         pointsShortMinus: "Pts",
         pdfViolation: "⚠ Violations:",
+        noArmiesAvailable: 'No saved army lists found',
+        editArmyList: 'Edit your army lists',
+        loadArmy: 'Load this army list',
         noSelectedListAlert:
           "⚠ No list selected. Choose a list to edit or go back to menu.",
+fetchArmiesFailed: 'Could not fetch army lists',
 
         //HomePage
         welcomeHome: "Welcome to your home page",
         welcomeHomeSubtext: "Here you will find all you need to battle",
         welcome: "Welcome to WarGame Online",
 
-        //fetchWithAuth
-        expiredSession: "Session expired",
-        nonJsonFormResponse: "Response is not JSON format",
+     
       },
     },
     it: {

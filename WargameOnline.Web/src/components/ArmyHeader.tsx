@@ -7,8 +7,7 @@ type Props = {
   game: Game | null;
   setGame: (game: Game | null) => void;
   games: Game[];
-  savedArmies: ArmySummary[] | Army[];
-  onSelectArmy: (id: number) => void | Promise<void>;
+  readOnly: boolean;
 };
 
 export default function ArmyHeader({
@@ -17,6 +16,7 @@ export default function ArmyHeader({
   game,
   setGame,
   games,
+  readOnly
 }: Props) {
   const { t } = useTranslation();
   return (
@@ -25,10 +25,12 @@ export default function ArmyHeader({
         className="p-2 text-black rounded w-full"
         placeholder={t("nameYourArmy")}
         value={armyName}
-        onChange={(e) => setArmyName(e.target.value)}
+        onChange={(e) => !readOnly && setArmyName(e.target.value)}
+        readOnly={readOnly}
       />
 
       <select
+        disabled={readOnly}
         value={game?.id ?? ""}
         onChange={(e) => {
           const selected =
