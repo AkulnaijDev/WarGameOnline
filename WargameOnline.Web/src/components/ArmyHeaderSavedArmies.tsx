@@ -15,9 +15,13 @@ export default function ArmyHeaderSavedArmies({
   onSelectArmy,
   mode
 }: Props) {
+  const visibleArmies = game
+    ? savedArmies.filter((a) => a.gameId === game.id)
+    : savedArmies
+
   return (
     <div className="w-full max-w-2xl space-y-3">
-      {mode !== 'create' &&  game && (
+      {mode !== 'create' && (
         <select
           value={selectedArmyId ?? ''}
           onChange={(e) => {
@@ -30,13 +34,11 @@ export default function ArmyHeaderSavedArmies({
             <option value="">-- Carica una lista salvata --</option>
           )}
 
-          {savedArmies
-            .filter((a) => a.gameId === game.id)
-            .map((a) => (
-              <option key={a.id} value={a.id}>
-                {a.name} (ID: {a.id})
-              </option>
-            ))}
+          {visibleArmies.map((a) => (
+            <option key={a.id} value={a.id}>
+              {a.name} (ID: {a.id})
+            </option>
+          ))}
         </select>
       )}
     </div>

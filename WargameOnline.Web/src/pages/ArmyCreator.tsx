@@ -1,255 +1,279 @@
-import { useEffect, useState } from 'react'
-import { jsPDF } from 'jspdf'
-import Sidebar from '../components/Sidebar'
-import ArmyStartMenu from '../components/ArmyStartMenu'
-import ArmyHeader from '../components/ArmyHeader'
-import ArmyHeaderSavedArmies from '../components/ArmyHeaderSavedArmies'
-import ArmySidebar from '../components/ArmySidebar'
-import FactionSelector from '../components/FactionSelector'
-import UnitTable from '../components/UnitTable'
-import UnitDetails from '../components/UnitDetails'
+import { useEffect, useState } from "react";
+import { jsPDF } from "jspdf";
+import Sidebar from "../components/Sidebar";
+import ArmyStartMenu from "../components/ArmyStartMenu";
+import ArmyHeader from "../components/ArmyHeader";
+import ArmyHeaderSavedArmies from "../components/ArmyHeaderSavedArmies";
+import ArmySidebar from "../components/ArmySidebar";
+import FactionSelector from "../components/FactionSelector";
+import UnitTable from "../components/UnitTable";
+import UnitDetails from "../components/UnitDetails";
 import {
   fetchArmies,
   fetchArmyById,
   saveArmy,
-  deleteArmy
-} from '../api/armyApi'
-import { useAuth } from '../context/AuthContext'
-import { Game, Faction, Unit, UnitWithCount, ArmyInput, ArmySummary, Mode, AddableUnit } from '../types/types'
+  deleteArmy,
+} from "../api/armyApi";
+import { useAuth } from "../context/AuthContext";
+import {
+  Game,
+  Faction,
+  Unit,
+  UnitWithCount,
+  ArmyInput,
+  ArmySummary,
+  Mode,
+  AddableUnit,
+} from "../types/types";
 
 export default function ArmyCreator() {
-  const [mode, setMode] = useState<Mode>('start')
-  const [rawData, setRawData] = useState<any>({})
-  const [game, setGame] = useState<Game | null>(null)
-  const [faction, setFaction] = useState<Faction | null>(null)
-  const [armyName, setArmyName] = useState('')
-  const [selectedUnits, setSelectedUnits] = useState<UnitWithCount[]>([])
-  const [selectedUnitIndex, setSelectedUnitIndex] = useState<number | null>(null)
-  const [savedArmies, setSavedArmies] = useState<ArmySummary[]>([])
-  const [selectedArmyId, setSelectedArmyId] = useState<number | null>(null)
+  const [mode, setMode] = useState<Mode>("start");
+  const [rawData, setRawData] = useState<any>({});
+  const [game, setGame] = useState<Game | null>(null);
+  const [faction, setFaction] = useState<Faction | null>(null);
+  const [armyName, setArmyName] = useState("");
+  const [selectedUnits, setSelectedUnits] = useState<UnitWithCount[]>([]);
+  const [selectedUnitIndex, setSelectedUnitIndex] = useState<number | null>(
+    null
+  );
+  const [savedArmies, setSavedArmies] = useState<ArmySummary[]>([]);
+  const [selectedArmyId, setSelectedArmyId] = useState<number | null>(null);
 
-  const { token } = useAuth()
+  const { token } = useAuth();
 
   useEffect(() => {
-    fetch('/data/games.json')
-      .then(res => res.json())
+    fetch("/data/games.json")
+      .then((res) => res.json())
       .then(setRawData)
-      .catch(console.error)
-  }, [])
+      .catch(console.error);
+  }, []);
 
   useEffect(() => {
-    if (!token) return
-    fetchArmies(token)
-      .then(setSavedArmies)
-      .catch(console.error)
-  }, [token])
+    if (!token) return;
+    fetchArmies(token).then(setSavedArmies).catch(console.error);
+  }, [token]);
 
-  const allGames: Game[] = Object.values(rawData) as Game[]
-  const units: Unit[] = faction?.units || []
+  const allGames: Game[] = Object.values(rawData) as Game[];
+  const units: Unit[] = faction?.units || [];
 
-  const selectedFactionRules = faction?.constraintsByThreshold ?? { step: 0, rules: {} }
-  const thresholdStep = selectedFactionRules.step || 0
-  const multiplier = thresholdStep > 0 ? Math.floor(totalPoints() / thresholdStep) + 1 : 1
+  const selectedFactionRules = faction?.constraintsByThreshold ?? {
+    step: 0,
+    rules: {},
+  };
+  const thresholdStep = selectedFactionRules.step || 0;
+  const multiplier =
+    thresholdStep > 0 ? Math.floor(totalPoints() / thresholdStep) + 1 : 1;
 
   function totalPoints() {
-    return selectedUnits.reduce((sum, u) => sum + u.points * u.count, 0)
+    return selectedUnits.reduce((sum, u) => sum + u.points * u.count, 0);
   }
 
   function totalCount() {
-    return selectedUnits.reduce((sum, u) => sum + u.count, 0)
+    return selectedUnits.reduce((sum, u) => sum + u.count, 0);
   }
 
   function validateBasic() {
-    const c = faction?.constraints
-    return (!c?.maxPoints || totalPoints() <= c.maxPoints) &&
+    const c = faction?.constraints;
+    return (
+      (!c?.maxPoints || totalPoints() <= c.maxPoints) &&
       (!c?.minUnits || totalCount() >= c.minUnits)
+    );
   }
 
   function validateDynamic(): string[] {
-  const violations: string[] = []
+    const violations: string[] = [];
 
-  // Crea una mappa unità selezionate per ID
-  const selectedById = new Map<number, UnitWithCount>()
-  for (const u of selectedUnits) {
-    selectedById.set(u.id, u)
-  }
-
-  // Ricava tutte le unità disponibili nella fazione
-  const allUnits: Unit[] = faction?.units || []
-
-  for (const unit of allUnits) {
-    const constraints = unit.thresholdConstraints
-    if (!constraints) continue
-
-    const selected = selectedById.get(unit.id)
-    const count = selected?.count ?? 0
-
-    const min = constraints.min !== undefined
-      ? constraints.min * multiplier
-      : constraints.minFixed
-    const max = constraints.max !== undefined
-      ? constraints.max * multiplier
-      : constraints.maxFixed
-
-    if (min !== undefined && count < min) {
-      violations.push(`${unit.name}: at least ${min}`)
+    // Crea una mappa unità selezionate per ID
+    const selectedById = new Map<number, UnitWithCount>();
+    for (const u of selectedUnits) {
+      selectedById.set(u.id, u);
     }
-    if (max !== undefined && count > max) {
-      violations.push(`${unit.name}: at most ${max}`)
+
+    // Ricava tutte le unità disponibili nella fazione
+    const allUnits: Unit[] = faction?.units || [];
+
+    for (const unit of allUnits) {
+      const constraints = unit.thresholdConstraints;
+      if (!constraints) continue;
+
+      const selected = selectedById.get(unit.id);
+      const count = selected?.count ?? 0;
+
+      const min =
+        constraints.min !== undefined
+          ? constraints.min * multiplier
+          : constraints.minFixed;
+      const max =
+        constraints.max !== undefined
+          ? constraints.max * multiplier
+          : constraints.maxFixed;
+
+      if (min !== undefined && count < min) {
+        violations.push(`${unit.name}: at least ${min}`);
+      }
+      if (max !== undefined && count > max) {
+        violations.push(`${unit.name}: at most ${max}`);
+      }
     }
+
+    return violations;
   }
-
-  return violations
-}
-
-
 
   const resetState = () => {
-    setGame(null)
-    setFaction(null)
-    setArmyName('')
-    setSelectedUnits([])
-    setSelectedUnitIndex(null)
-    setSelectedArmyId(null)
-  }
+    setGame(null);
+    setFaction(null);
+    setArmyName("");
+    setSelectedUnits([]);
+    setSelectedUnitIndex(null);
+    setSelectedArmyId(null);
+  };
 
   const handleLoadArmy = async (id: number) => {
     try {
-      const data = await fetchArmyById(id, token)
-      const selectedGame = allGames.find(g => g.id === data.gameId) || null
-      const selectedFaction = selectedGame?.factions?.find(f => f.id === data.factionId) || null
+      const data = await fetchArmyById(id, token);
+      const selectedGame = allGames.find((g) => g.id === data.gameId) || null;
+      const selectedFaction =
+        selectedGame?.factions?.find((f) => f.id === data.factionId) || null;
 
       const enrichedUnits: UnitWithCount[] = data.units
-        .map(u => {
-          const full = selectedFaction?.units.find(unit => unit.id === u.unitId)
-          if (!full) return null
-          return { ...full, count: u.count }
+        .map((u) => {
+          const full = selectedFaction?.units.find(
+            (unit) => unit.id === u.unitId
+          );
+          if (!full) return null;
+          return { ...full, count: u.count };
         })
-        .filter((x): x is UnitWithCount => x !== null)
+        .filter((x): x is UnitWithCount => x !== null);
 
+      if (!selectedGame || !selectedFaction)
+        throw new Error("Game or Faction not found");
 
-
-
-      if (!selectedGame || !selectedFaction) throw new Error('Game or Faction not found')
-
-      setSelectedArmyId(data.id)
-      setArmyName(data.name)
-      setGame(selectedGame)
-      setFaction(selectedFaction)
-      setSelectedUnits(enrichedUnits)
-      setMode('edit')
+      setSelectedArmyId(data.id);
+      setArmyName(data.name);
+      setGame(selectedGame);
+      setFaction(selectedFaction);
+      setSelectedUnits(enrichedUnits);
+      setMode("edit");
     } catch (err) {
-      console.error('Errore nel caricamento armata:', err)
+      console.error("Errore nel caricamento armata:", err);
     }
-  }
+  };
 
   const handleSaveArmy = async () => {
-    if (!armyName || !game || !faction || selectedUnits.length === 0 || !validateBasic() || validateDynamic().length > 0) return
+    if (
+      !armyName ||
+      !game ||
+      !faction ||
+      selectedUnits.length === 0 ||
+      !validateBasic() ||
+      validateDynamic().length > 0
+    )
+      return;
 
     const payload: ArmyInput = {
       name: armyName,
       gameId: game.id,
       factionId: faction.id,
-      units: selectedUnits.map(u => ({
+      units: selectedUnits.map((u) => ({
         unitId: u.id,
         gameId: game.id,
         factionId: u.factionId, // 👈 fazione specifica dell’unità
-        count: u.count
-      }))
-    }
+        count: u.count,
+      })),
+    };
 
     try {
       const response = await saveArmy(
         { ...payload, id: selectedArmyId ?? undefined },
         token
-      )
+      );
       // Aggiorna lo stato locale
-      setSelectedArmyId(response.id)
-      setMode('edit')
+      setSelectedArmyId(response.id);
+      setMode("edit");
 
       // 👇 Reload delle armate salvate
-      const updatedArmies = await fetchArmies(token)
-      setSavedArmies(updatedArmies)
+      const updatedArmies = await fetchArmies(token);
+      setSavedArmies(updatedArmies);
     } catch (err) {
-      console.error('Errore salvataggio armata:', err)
+      console.error("Errore salvataggio armata:", err);
     }
-  }
+  };
 
   const handleDeleteArmy = async () => {
-    if (!selectedArmyId) return
+    if (!selectedArmyId) return;
     try {
-      await deleteArmy(selectedArmyId, token)
-      setSelectedArmyId(null)
-      setSelectedUnits([])
-      setArmyName('')
-      setMode('start')
-      const updatedArmies = await fetchArmies(token)
-      setSavedArmies(updatedArmies)
+      await deleteArmy(selectedArmyId, token);
+      setSelectedArmyId(null);
+      setSelectedUnits([]);
+      setArmyName("");
+      setMode("start");
+      const updatedArmies = await fetchArmies(token);
+      setSavedArmies(updatedArmies);
     } catch (err) {
-      console.error('Errore eliminazione armata:', err)
+      console.error("Errore eliminazione armata:", err);
     }
-  }
+  };
 
   const handleChangeCount = (name: string, delta: number) => {
-    setSelectedUnits(prev =>
+    setSelectedUnits((prev) =>
       prev
-        .map(u => (u.name === name ? { ...u, count: u.count + delta } : u))
-        .filter(u => u.count > 0)
-    )
-  }
+        .map((u) => (u.name === name ? { ...u, count: u.count + delta } : u))
+        .filter((u) => u.count > 0)
+    );
+  };
 
   const handleAddUnit = (u: AddableUnit) => {
-  const idx = selectedUnits.findIndex(x => x.id === u.id)
+    const idx = selectedUnits.findIndex((x) => x.id === u.id);
 
-  if (idx !== -1) {
-    // Se l'unità è già presente, aumentiamo il conteggio
-    const updated = [...selectedUnits]
-    updated[idx].count += 1
-    setSelectedUnits(updated)
-  } else {
-    // Se è nuova, aggiungiamola con factionId esplicito
-    setSelectedUnits([
-      ...selectedUnits,
-      {
-        ...u,
-        count: 1,
-        factionId: u.factionId // ← garantito perché AddableUnit lo richiede
-      }
-    ])
-  }
-}
+    if (idx !== -1) {
+      // Se l'unità è già presente, aumentiamo il conteggio
+      const updated = [...selectedUnits];
+      updated[idx].count += 1;
+      setSelectedUnits(updated);
+    } else {
+      // Se è nuova, aggiungiamola con factionId esplicito
+      setSelectedUnits([
+        ...selectedUnits,
+        {
+          ...u,
+          count: 1,
+          factionId: u.factionId, // ← garantito perché AddableUnit lo richiede
+        },
+      ]);
+    }
+  };
 
   const exportPdf = () => {
-    const doc = new jsPDF()
-    doc.setFontSize(16)
-    doc.text(`Army: ${armyName || 'Unnamed'}`, 10, 20)
-    doc.setFontSize(12)
-    doc.text(`Game: ${game?.name || '-'}`, 10, 30)
-    doc.text(`Faction: ${faction?.name || '-'}`, 10, 37)
-    doc.text(`Points: ${totalPoints()}`, 10, 44)
-    doc.text(`Units: ${totalCount()}`, 10, 51)
-    doc.text('Units selected:', 10, 65)
-    let y = 72
-    selectedUnits.forEach(u => {
-      doc.text(`${u.name} ×${u.count} (${u.points} pts)`, 12, y)
-      y += 7
-    })
-    const violations = validateDynamic()
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text(`Army: ${armyName || "Unnamed"}`, 10, 20);
+    doc.setFontSize(12);
+    doc.text(`Game: ${game?.name || "-"}`, 10, 30);
+    doc.text(`Faction: ${faction?.name || "-"}`, 10, 37);
+    doc.text(`Points: ${totalPoints()}`, 10, 44);
+    doc.text(`Units: ${totalCount()}`, 10, 51);
+    doc.text("Units selected:", 10, 65);
+    let y = 72;
+    selectedUnits.forEach((u) => {
+      doc.text(`${u.name} ×${u.count} (${u.points} pts)`, 12, y);
+      y += 7;
+    });
+    const violations = validateDynamic();
     if (violations.length > 0) {
-      y += 5
-      doc.setTextColor(200, 0, 0)
-      doc.text('⚠ Violations:', 10, y)
-      y += 6
-      violations.forEach(v => {
-        doc.text(`• ${v}`, 12, y)
-        y += 6
-      })
-      doc.setTextColor(0, 0, 0)
+      y += 5;
+      doc.setTextColor(200, 0, 0);
+      doc.text("⚠ Violations:", 10, y);
+      y += 6;
+      violations.forEach((v) => {
+        doc.text(`• ${v}`, 12, y);
+        y += 6;
+      });
+      doc.setTextColor(0, 0, 0);
     }
-    doc.save(`${armyName || 'army-list'}.pdf`)
-  }
+    doc.save(`${armyName || "army-list"}.pdf`);
+  };
 
-  if (mode === 'start') {
+  if (mode === "start") {
     return (
       <div className="min-h-screen flex flex-col sm:flex-row bg-bg text-white">
         <Sidebar />
@@ -257,23 +281,27 @@ export default function ArmyCreator() {
           <ArmyStartMenu
             canEdit={savedArmies.length > 0}
             onCreate={() => {
-              resetState()
-              setMode('create')
+              resetState();
+              setMode("create");
             }}
-            onEdit={() => setMode('edit')}
+            onEdit={() => setMode("edit")}
           />
         </main>
       </div>
-    )
+    );
   }
 
-  if (mode === 'edit' && !selectedArmyId) {
+  if (mode === "edit" && !selectedArmyId) {
     return (
       <div className="min-h-screen flex flex-col sm:flex-row bg-bg text-white">
         <Sidebar />
         <main className="flex-1 p-6 flex flex-col items-center">
           <button
-            onClick={() => setMode('start')}
+            onClick={() => {
+              setMode("start");
+              setSelectedArmyId(null); // 👈 questo resetta lo stato per tornare alla selezione
+              setGame(null); // 👈 reset
+            }}
             className="self-start mb-4 text-sm text-slate-400 hover:underline"
           >
             ← Torna al menu
@@ -288,11 +316,12 @@ export default function ArmyCreator() {
           />
 
           <div className="bg-yellow-700 text-white p-4 rounded mt-6 max-w-xl">
-            ⚠ Nessuna lista selezionata. Scegli una lista da modificare oppure torna indietro.
+            ⚠ Nessuna lista selezionata. Scegli una lista da modificare oppure
+            torna indietro.
           </div>
         </main>
       </div>
-    )
+    );
   }
 
   return (
@@ -300,7 +329,11 @@ export default function ArmyCreator() {
       <Sidebar />
       <main className="flex-1 p-6 flex flex-col items-center">
         <button
-          onClick={() => setMode('start')}
+          onClick={() => {
+            setMode("start");
+            setSelectedArmyId(null); // 👈 questo resetta lo stato per tornare alla selezione
+            setGame(null); // 👈 reset
+          }}
           className="self-start mb-4 text-sm text-slate-400 hover:underline"
         >
           ← Torna al menu
@@ -311,15 +344,17 @@ export default function ArmyCreator() {
           setArmyName={setArmyName}
           game={game}
           setGame={(val) => {
-            setGame(val)
-            setFaction(null)
-            setSelectedUnits([])
-            setSelectedArmyId(null)
+            setGame(val);
+            setFaction(null);
+            setSelectedUnits([]);
+            setSelectedArmyId(null);
           }}
           games={allGames}
-          savedArmies={mode !== 'create'
-            ? savedArmies.filter(a => game && a.gameId === game.id)
-            : []}
+          savedArmies={
+            mode !== "create"
+              ? savedArmies.filter((a) => game && a.gameId === game.id)
+              : []
+          }
           onSelectArmy={handleLoadArmy}
         />
 
@@ -327,9 +362,9 @@ export default function ArmyCreator() {
           <FactionSelector
             faction={faction}
             setFaction={(val) => {
-              setFaction(val)
-              setSelectedUnits([])
-              setSelectedUnitIndex(null)
+              setFaction(val);
+              setSelectedUnits([]);
+              setSelectedUnitIndex(null);
             }}
             factions={game.factions || []}
           />
@@ -337,14 +372,11 @@ export default function ArmyCreator() {
 
         <ArmyHeaderSavedArmies
           game={game}
-          savedArmies={savedArmies.filter(a => game && a.gameId === game.id)}
+          savedArmies={savedArmies.filter((a) => game && a.gameId === game.id)}
           selectedArmyId={selectedArmyId}
           onSelectArmy={handleLoadArmy}
           mode={mode}
         />
-
-
-
 
         <div className="w-full max-w-5xl flex flex-col md:flex-row gap-8 mt-6">
           <div className="flex-1">
@@ -356,7 +388,11 @@ export default function ArmyCreator() {
                   onSelect={setSelectedUnitIndex}
                   onAdd={(u) => handleAddUnit(u as AddableUnit)}
                 />
-                <UnitDetails unit={selectedUnitIndex !== null ? units[selectedUnitIndex] : null} />
+                <UnitDetails
+                  unit={
+                    selectedUnitIndex !== null ? units[selectedUnitIndex] : null
+                  }
+                />
               </>
             )}
           </div>
@@ -377,11 +413,14 @@ export default function ArmyCreator() {
             onSave={handleSaveArmy}
             onDelete={handleDeleteArmy}
             isSaveDisabled={
-              !armyName || selectedUnits.length === 0 || !validateBasic() || validateDynamic().length > 0
+              !armyName ||
+              selectedUnits.length === 0 ||
+              !validateBasic() ||
+              validateDynamic().length > 0
             }
           />
         </div>
       </main>
     </div>
-  )
+  );
 }
