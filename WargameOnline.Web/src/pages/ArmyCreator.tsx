@@ -15,7 +15,7 @@ import {
   deleteArmy
 } from '../api/armyApi'
 import { useAuth } from '../context/AuthContext'
-import { Game, Faction, Unit, UnitWithCount, ArmyInput, ArmySummary, Mode } from '../types/types'
+import { Game, Faction, Unit, UnitWithCount, ArmyInput, ArmySummary, Mode, AddableUnit } from '../types/types'
 
 export default function ArmyCreator() {
   const [mode, setMode] = useState<Mode>('start')
@@ -198,16 +198,26 @@ export default function ArmyCreator() {
     )
   }
 
-  const handleAddUnit = (u: Unit) => {
-    const idx = selectedUnits.findIndex(x => x.name === u.name)
-    if (idx !== -1) {
-      const updated = [...selectedUnits]
-      updated[idx].count += 1
-      setSelectedUnits(updated)
-    } else {
-      setSelectedUnits([...selectedUnits, { ...u, count: 1, factionId: u.factionId }])
-    }
+  const handleAddUnit = (u: AddableUnit) => {
+  const idx = selectedUnits.findIndex(x => x.id === u.id)
+
+  if (idx !== -1) {
+    // Se l'unità è già presente, aumentiamo il conteggio
+    const updated = [...selectedUnits]
+    updated[idx].count += 1
+    setSelectedUnits(updated)
+  } else {
+    // Se è nuova, aggiungiamola con factionId esplicito
+    setSelectedUnits([
+      ...selectedUnits,
+      {
+        ...u,
+        count: 1,
+        factionId: u.factionId // ← garantito perché AddableUnit lo richiede
+      }
+    ])
   }
+}
 
   const exportPdf = () => {
     const doc = new jsPDF()
@@ -344,7 +354,7 @@ export default function ArmyCreator() {
                   units={units}
                   selectedIndex={selectedUnitIndex}
                   onSelect={setSelectedUnitIndex}
-                  onAdd={handleAddUnit}
+                  onAdd={(u) => handleAddUnit(u as AddableUnit)}
                 />
                 <UnitDetails unit={selectedUnitIndex !== null ? units[selectedUnitIndex] : null} />
               </>

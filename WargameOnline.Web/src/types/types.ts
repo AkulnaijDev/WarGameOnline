@@ -1,6 +1,3 @@
-// types.ts
-
-
 export type SavedArmy = {
   id: string
   name: string
@@ -18,7 +15,7 @@ export type Game = {
 export type Faction = {
   id: number
   name: string
-  gameId: number
+  displayName?: string
   units: Unit[]
   constraints?: {
     maxPoints?: number
@@ -26,15 +23,10 @@ export type Faction = {
   }
   constraintsByThreshold?: {
     step: number
-    rules: {
-      [unitName: string]: {
-        min?: number
-        max?: number
-        minFixed?: number
-        maxFixed?: number
-      }
-    }
   }
+
+  // Aggiunto dinamicamente via enrichGameData()
+  gameId?: number
 }
 
 export type ThresholdConstraints = {
@@ -43,6 +35,7 @@ export type ThresholdConstraints = {
   minFixed?: number
   maxFixed?: number
 }
+
 export type Unit = {
   id: number
   name: string
@@ -50,14 +43,20 @@ export type Unit = {
   stats?: Record<string, number>
   description?: string
   rules?: string[]
-   factionId: number // 👈 AGGIUNTO
-    thresholdConstraints?: ThresholdConstraints // ✅ aggiunto!
+  thresholdConstraints?: ThresholdConstraints
+
+  // Aggiunto dinamicamente via enrichGameData()
+  factionId?: number
+  gameId?: number
 }
 
 export type UnitWithCount = Unit & {
   count: number
-  factionId: number // 👈 aggiunto!
+  factionId: number
 }
+
+export type AddableUnit = Unit & { factionId: number }
+
 export type ArmyInputWithId = ArmyInput & { id?: number }
 
 export type Mode = 'start' | 'create' | 'edit'
