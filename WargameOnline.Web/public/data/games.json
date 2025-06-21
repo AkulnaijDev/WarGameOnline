@@ -34,7 +34,8 @@
             "points": 90,
             "stats": { "leadership": 4 },
             "rules": ["stratega"],
-            "description": "Il capo delle truppe gobline."
+            "description": "Il capo delle truppe gobline.",
+            "thresholdConstraints": { "minFixed": 1, "maxFixed": 1 }
           },
           {
             "id": 4,
@@ -43,7 +44,8 @@
             "points": 200,
             "stats": { "volo": true, "soffio": "fuoco" },
             "rules": ["mostro", "volante"],
-            "description": "Una creatura devastante dalle montagne nebbiose."
+            "description": "Una creatura devastante dalle montagne nebbiose.",
+            "thresholdConstraints": { "max": 2 }
           },
           {
             "id": 5,
@@ -51,16 +53,33 @@
             "name": "Scudiere",
             "points": 30,
             "stats": { "difesa": 3 },
-            "description": "Fanteria di supporto, dotata di scudo e speranza."
+            "description": "Fanteria di supporto, dotata di scudo e speranza.",
+            "thresholdConstraints": { "min": 3 }
           }
         ],
         "constraintsByThreshold": {
-          "step": 1000,
-          "rules": {
-            "Generale Goblin": { "minFixed": 1, "maxFixed": 1 },
-            "Drago Verde": { "max": 2 },
-            "Scudiere": { "min": 3 }
+          "step": 1000
+        }
+      },
+      {
+        "id": 2,
+        "name": "bretonini",
+        "displayName": "BRETONINI",
+        "gameId": 1,
+        "units": [
+          {
+            "id": 7,
+            "factionId": 2,
+            "name": "Cavalierino",
+            "points": 15,
+            "stats": { "attack": 1, "defense": 2 },
+            "rules": ["coraggioso"],
+            "description": "Un cavallone",
+            "thresholdConstraints": { "minFixed": 1, "maxFixed": 1 }
           }
+        ],
+        "constraintsByThreshold": {
+          "step": 1000
         }
       }
     ]

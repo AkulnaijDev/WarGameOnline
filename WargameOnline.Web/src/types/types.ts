@@ -37,7 +37,12 @@ export type Faction = {
   }
 }
 
-
+export type ThresholdConstraints = {
+  min?: number
+  max?: number
+  minFixed?: number
+  maxFixed?: number
+}
 export type Unit = {
   id: number
   name: string
@@ -46,6 +51,7 @@ export type Unit = {
   description?: string
   rules?: string[]
    factionId: number // 👈 AGGIUNTO
+    thresholdConstraints?: ThresholdConstraints // ✅ aggiunto!
 }
 
 export type UnitWithCount = Unit & {

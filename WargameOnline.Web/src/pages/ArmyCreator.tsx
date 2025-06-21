@@ -66,21 +66,43 @@ export default function ArmyCreator() {
   }
 
   function validateDynamic(): string[] {
-    const rules = selectedFactionRules.rules || {}
-    const violations: string[] = []
-    for (const [unitName, rule] of Object.entries(rules) as [
-      string,
-      { min?: number; max?: number; minFixed?: number; maxFixed?: number }
-    ][]) {
-      const found = selectedUnits.find(u => u.name === unitName)
-      const count = found?.count ?? 0
-      const min = rule.min !== undefined ? rule.min * multiplier : rule.minFixed
-      const max = rule.max !== undefined ? rule.max * multiplier : rule.maxFixed
-      if (min !== undefined && count < min) violations.push(`${unitName}: at least ${min}`)
-      if (max !== undefined && count > max) violations.push(`${unitName}: at most ${max}`)
-    }
-    return violations
+  const violations: string[] = []
+
+  // Crea una mappa unità selezionate per ID
+  const selectedById = new Map<number, UnitWithCount>()
+  for (const u of selectedUnits) {
+    selectedById.set(u.id, u)
   }
+
+  // Ricava tutte le unità disponibili nella fazione
+  const allUnits: Unit[] = faction?.units || []
+
+  for (const unit of allUnits) {
+    const constraints = unit.thresholdConstraints
+    if (!constraints) continue
+
+    const selected = selectedById.get(unit.id)
+    const count = selected?.count ?? 0
+
+    const min = constraints.min !== undefined
+      ? constraints.min * multiplier
+      : constraints.minFixed
+    const max = constraints.max !== undefined
+      ? constraints.max * multiplier
+      : constraints.maxFixed
+
+    if (min !== undefined && count < min) {
+      violations.push(`${unit.name}: at least ${min}`)
+    }
+    if (max !== undefined && count > max) {
+      violations.push(`${unit.name}: at most ${max}`)
+    }
+  }
+
+  return violations
+}
+
+
 
   const resetState = () => {
     setGame(null)
@@ -232,33 +254,32 @@ export default function ArmyCreator() {
   }
 
   if (mode === 'edit' && !selectedArmyId) {
-  return (
-    <div className="min-h-screen flex flex-col sm:flex-row bg-bg text-white">
-      <Sidebar />
-      <main className="flex-1 p-6 flex flex-col items-center">
-        <button
-          onClick={() => setMode('start')}
-          className="self-start mb-4 text-sm text-slate-400 hover:underline"
-        >
-          ← Torna al menu
-        </button>
+    return (
+      <div className="min-h-screen flex flex-col sm:flex-row bg-bg text-white">
+        <Sidebar />
+        <main className="flex-1 p-6 flex flex-col items-center">
+          <button
+            onClick={() => setMode('start')}
+            className="self-start mb-4 text-sm text-slate-400 hover:underline"
+          >
+            ← Torna al menu
+          </button>
 
-        <ArmyHeaderSavedArmies
-          game={game}
-          savedArmies={savedArmies}
-          selectedArmyId={selectedArmyId}
-          onSelectArmy={handleLoadArmy}
-          mode={mode}
-        />
+          <ArmyHeaderSavedArmies
+            game={game}
+            savedArmies={savedArmies}
+            selectedArmyId={selectedArmyId}
+            onSelectArmy={handleLoadArmy}
+            mode={mode}
+          />
 
-        <div className="bg-yellow-700 text-white p-4 rounded mt-6 max-w-xl">
-          ⚠ Nessuna lista selezionata. Scegli una lista da modificare oppure torna indietro.
-        </div>
-      </main>
-    </div>
-  )
-}
-
+          <div className="bg-yellow-700 text-white p-4 rounded mt-6 max-w-xl">
+            ⚠ Nessuna lista selezionata. Scegli una lista da modificare oppure torna indietro.
+          </div>
+        </main>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen flex flex-col sm:flex-row bg-bg text-white">

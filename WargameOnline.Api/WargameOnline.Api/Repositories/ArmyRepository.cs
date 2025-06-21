@@ -81,8 +81,9 @@ WHERE user_id = @UserId
 
         const string unitInsert = """
    INSERT INTO army_units (army_id, unit_id, game_id, faction_id, count)
-VALUES (@ArmyId, @UnitId, @GameId, @UnitFactionId, @Count);
+VALUES (@ArmyId, @UnitId, @GameId, @FactionId, @Count);
 """;
+
 
         using var conn = _context.Create();
         conn.Open();
