@@ -68,7 +68,10 @@ export default function FriendsSidebar() {
 
   return (
     <div className="fixed bottom-4 right-4 w-72 bg-slate-800 border border-slate-600 rounded-xl shadow-xl text-sm z-50">
-      <div className="flex items-center justify-between px-3 py-2 border-b border-slate-600 relative">
+      <div
+        className={`flex items-center justify-between px-3 py-2 relative ${!isMinimized ? 'border-b border-slate-600' : ''
+          }`}
+      >
         <h3 className="font-semibold text-white tracking-wide text-xs text-center flex-1">
           {t('friends')}
         </h3>

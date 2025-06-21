@@ -44,10 +44,8 @@ export const saveArmy = async (
 
   if (!response.ok) throw new Error('Errore salvataggio armata');
 
-  return await response.json(); // { id: 123 }
+  return await response.json();
 }
-
-
 
 export const updateArmy = (army: ArmyInput & { id: number }, token: string | null) => {
   if (!token) throw new Error('Token mancante');
