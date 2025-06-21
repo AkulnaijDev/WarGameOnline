@@ -45,13 +45,16 @@ export type Unit = {
   stats?: Record<string, number>
   description?: string
   rules?: string[]
+   factionId: number // 👈 AGGIUNTO
 }
 
 export type UnitWithCount = Unit & {
   count: number
+  factionId: number // 👈 aggiunto!
 }
 export type ArmyInputWithId = ArmyInput & { id?: number }
 
+export type Mode = 'start' | 'create' | 'edit'
 
 export type ArmyInput = {
   name: string

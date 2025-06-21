@@ -22,10 +22,16 @@ public class ArmyRepository : IArmyRepository
     public async Task<IEnumerable<Army>> GetByUserIdAsync(int userId)
     {
         const string query = """
-        SELECT id, name, game_id, faction_id, user_id
-        FROM armies
-        WHERE user_id = @UserId
-    """;
+SELECT
+  id,
+  name,
+  game_id AS GameId,
+  faction_id AS FactionId,
+  user_id AS UserId
+FROM armies
+WHERE user_id = @UserId
+""";
+
 
         using var conn = _context.Create();
         return await conn.QueryAsync<Army>(query, new { UserId = userId });
@@ -35,13 +41,21 @@ public class ArmyRepository : IArmyRepository
     public async Task<Army?> GetByIdAsync(int id)
     {
         const string queryArmy = """
-        SELECT id, name, game_id, faction_id, user_id
+        SELECT id, 
+        name, 
+        game_id AS GameId, 
+        faction_id AS FactionId,
+        user_id AS UserId
         FROM armies
         WHERE id = @Id
     """;
 
         const string queryUnits = """
-        SELECT unit_id, game_id, faction_id, count
+        SELECT 
+        unit_id as UnitId, 
+        game_id AS GameId, 
+        faction_id AS FactionId,
+        count
         FROM army_units
         WHERE army_id = @Id
     """;
@@ -66,8 +80,8 @@ public class ArmyRepository : IArmyRepository
 """;
 
         const string unitInsert = """
-    INSERT INTO army_units (army_id, unit_id, game_id, faction_id, count)
-    VALUES (@ArmyId, @UnitId, @GameId, @FactionId, @Count);
+   INSERT INTO army_units (army_id, unit_id, game_id, faction_id, count)
+VALUES (@ArmyId, @UnitId, @GameId, @UnitFactionId, @Count);
 """;
 
         using var conn = _context.Create();

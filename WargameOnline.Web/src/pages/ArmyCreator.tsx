@@ -3,6 +3,7 @@ import { jsPDF } from 'jspdf'
 import Sidebar from '../components/Sidebar'
 import ArmyStartMenu from '../components/ArmyStartMenu'
 import ArmyHeader from '../components/ArmyHeader'
+import ArmyHeaderSavedArmies from '../components/ArmyHeaderSavedArmies'
 import ArmySidebar from '../components/ArmySidebar'
 import FactionSelector from '../components/FactionSelector'
 import UnitTable from '../components/UnitTable'
@@ -14,9 +15,7 @@ import {
   deleteArmy
 } from '../api/armyApi'
 import { useAuth } from '../context/AuthContext'
-import { Game, Faction, Unit, UnitWithCount, ArmyInput, ArmySummary } from '../types/types'
-
-type Mode = 'start' | 'create' | 'edit'
+import { Game, Faction, Unit, UnitWithCount, ArmyInput, ArmySummary, Mode } from '../types/types'
 
 export default function ArmyCreator() {
   const [mode, setMode] = useState<Mode>('start')
@@ -39,17 +38,16 @@ export default function ArmyCreator() {
   }, [])
 
   useEffect(() => {
-    if (!token || !game) return
-    fetchArmies(token).then(setSavedArmies).catch(console.error)
-  }, [game])
+    if (!token) return
+    fetchArmies(token)
+      .then(setSavedArmies)
+      .catch(console.error)
+  }, [token])
 
   const allGames: Game[] = Object.values(rawData) as Game[]
   const units: Unit[] = faction?.units || []
 
-  const selectedFactionRules = faction?.constraintsByThreshold ?? {
-    step: 0,
-    rules: {}
-  }
+  const selectedFactionRules = faction?.constraintsByThreshold ?? { step: 0, rules: {} }
   const thresholdStep = selectedFactionRules.step || 0
   const multiplier = thresholdStep > 0 ? Math.floor(totalPoints() / thresholdStep) + 1 : 1
 
@@ -69,9 +67,11 @@ export default function ArmyCreator() {
 
   function validateDynamic(): string[] {
     const rules = selectedFactionRules.rules || {}
-    
     const violations: string[] = []
-    for (const [unitName, rule] of Object.entries(rules)) {
+    for (const [unitName, rule] of Object.entries(rules) as [
+      string,
+      { min?: number; max?: number; minFixed?: number; maxFixed?: number }
+    ][]) {
       const found = selectedUnits.find(u => u.name === unitName)
       const count = found?.count ?? 0
       const min = rule.min !== undefined ? rule.min * multiplier : rule.minFixed
@@ -99,11 +99,14 @@ export default function ArmyCreator() {
 
       const enrichedUnits: UnitWithCount[] = data.units
         .map(u => {
-          const full = faction?.units.find(unit => unit.id === u.unitId)
+          const full = selectedFaction?.units.find(unit => unit.id === u.unitId)
           if (!full) return null
           return { ...full, count: u.count }
         })
         .filter((x): x is UnitWithCount => x !== null)
+
+
+
 
       if (!selectedGame || !selectedFaction) throw new Error('Game or Faction not found')
 
@@ -128,7 +131,7 @@ export default function ArmyCreator() {
       units: selectedUnits.map(u => ({
         unitId: u.id,
         gameId: game.id,
-        factionId: faction.id,
+        factionId: u.factionId, // 👈 fazione specifica dell’unità
         count: u.count
       }))
     }
@@ -138,8 +141,13 @@ export default function ArmyCreator() {
         { ...payload, id: selectedArmyId ?? undefined },
         token
       )
+      // Aggiorna lo stato locale
       setSelectedArmyId(response.id)
       setMode('edit')
+
+      // 👇 Reload delle armate salvate
+      const updatedArmies = await fetchArmies(token)
+      setSavedArmies(updatedArmies)
     } catch (err) {
       console.error('Errore salvataggio armata:', err)
     }
@@ -171,7 +179,7 @@ export default function ArmyCreator() {
       updated[idx].count += 1
       setSelectedUnits(updated)
     } else {
-      setSelectedUnits([...selectedUnits, { ...u, count: 1 }])
+      setSelectedUnits([...selectedUnits, { ...u, count: 1, factionId: u.factionId }])
     }
   }
 
@@ -223,10 +231,38 @@ export default function ArmyCreator() {
     )
   }
 
+  if (mode === 'edit' && !selectedArmyId) {
   return (
     <div className="min-h-screen flex flex-col sm:flex-row bg-bg text-white">
       <Sidebar />
+      <main className="flex-1 p-6 flex flex-col items-center">
+        <button
+          onClick={() => setMode('start')}
+          className="self-start mb-4 text-sm text-slate-400 hover:underline"
+        >
+          ← Torna al menu
+        </button>
 
+        <ArmyHeaderSavedArmies
+          game={game}
+          savedArmies={savedArmies}
+          selectedArmyId={selectedArmyId}
+          onSelectArmy={handleLoadArmy}
+          mode={mode}
+        />
+
+        <div className="bg-yellow-700 text-white p-4 rounded mt-6 max-w-xl">
+          ⚠ Nessuna lista selezionata. Scegli una lista da modificare oppure torna indietro.
+        </div>
+      </main>
+    </div>
+  )
+}
+
+
+  return (
+    <div className="min-h-screen flex flex-col sm:flex-row bg-bg text-white">
+      <Sidebar />
       <main className="flex-1 p-6 flex flex-col items-center">
         <button
           onClick={() => setMode('start')}
@@ -246,24 +282,37 @@ export default function ArmyCreator() {
             setSelectedArmyId(null)
           }}
           games={allGames}
-          savedArmies={savedArmies}
+          savedArmies={mode !== 'create'
+            ? savedArmies.filter(a => game && a.gameId === game.id)
+            : []}
           onSelectArmy={handleLoadArmy}
         />
 
+        {game && (
+          <FactionSelector
+            faction={faction}
+            setFaction={(val) => {
+              setFaction(val)
+              setSelectedUnits([])
+              setSelectedUnitIndex(null)
+            }}
+            factions={game.factions || []}
+          />
+        )}
+
+        <ArmyHeaderSavedArmies
+          game={game}
+          savedArmies={savedArmies.filter(a => game && a.gameId === game.id)}
+          selectedArmyId={selectedArmyId}
+          onSelectArmy={handleLoadArmy}
+          mode={mode}
+        />
+
+
+
+
         <div className="w-full max-w-5xl flex flex-col md:flex-row gap-8 mt-6">
           <div className="flex-1">
-            {game && (
-              <FactionSelector
-                faction={faction}
-                setFaction={(val) => {
-                  setFaction(val)
-                  setSelectedUnits([])
-                  setSelectedUnitIndex(null)
-                }}
-                factions={game.factions || []}
-              />
-            )}
-
             {faction && (
               <>
                 <UnitTable

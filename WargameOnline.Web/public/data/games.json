@@ -11,6 +11,7 @@
         "units": [
           {
             "id": 1,
+            "factionId": 1,
             "name": "Schiavetto",
             "points": 15,
             "stats": { "attack": 1, "defense": 2 },
@@ -19,6 +20,7 @@
           },
           {
             "id": 2,
+            "factionId": 1,
             "name": "Ogro Ruttante",
             "points": 60,
             "stats": { "attack": 5, "defense": 4 },
@@ -27,6 +29,7 @@
           },
           {
             "id": 3,
+            "factionId": 1,
             "name": "Generale Goblin",
             "points": 90,
             "stats": { "leadership": 4 },
@@ -35,6 +38,7 @@
           },
           {
             "id": 4,
+            "factionId": 1,
             "name": "Drago Verde",
             "points": 200,
             "stats": { "volo": true, "soffio": "fuoco" },
@@ -43,6 +47,7 @@
           },
           {
             "id": 5,
+            "factionId": 1,
             "name": "Scudiere",
             "points": 30,
             "stats": { "difesa": 3 },
@@ -72,6 +77,7 @@
         "units": [
           {
             "id": 6,
+            "factionId": 1,
             "name": "Drone Esploratore",
             "points": 25,
             "systems": { "scan": 4, "cloak": 2 },
@@ -79,6 +85,7 @@
           },
           {
             "id": 7,
+            "factionId": 1,
             "name": "Battlesuit Sigma",
             "points": 80,
             "systems": { "armor": 5, "plasma": 4 },
