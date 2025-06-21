@@ -1,23 +1,23 @@
-
-import { UnitWithCount } from '../types/types'
+import { UnitWithCount } from "../types/types";
+import { useTranslation } from "react-i18next";
 
 type Props = {
-  selectedUnits: UnitWithCount[]
-  totalCount: number
-  totalPoints: number
-  thresholdStep: number
-  multiplier: number
-  basicValid: boolean
-  dynamicValid: boolean
-  violations: string[]
-  minUnits?: number
-  selectedArmyId: number | null
-  onChangeCount: (unitName: string, delta: number) => void
-  onExport: () => void
-  onSave: () => void
-  onDelete: () => void
-  isSaveDisabled: boolean
-}
+  selectedUnits: UnitWithCount[];
+  totalCount: number;
+  totalPoints: number;
+  thresholdStep: number;
+  multiplier: number;
+  basicValid: boolean;
+  dynamicValid: boolean;
+  violations: string[];
+  minUnits?: number;
+  selectedArmyId: number | null;
+  onChangeCount: (unitName: string, delta: number) => void;
+  onExport: () => void;
+  onSave: () => void;
+  onDelete: () => void;
+  isSaveDisabled: boolean;
+};
 
 export default function ArmySidebar({
   selectedUnits,
@@ -36,12 +36,14 @@ export default function ArmySidebar({
   onDelete,
   isSaveDisabled,
 }: Props) {
+  const { t } = useTranslation();
+
   return (
     <div className="w-full md:w-80 bg-slate-800 p-4 rounded border border-slate-700 space-y-4">
-      <h2 className="text-lg font-semibold">🪖 Your Army</h2>
+      <h2 className="text-lg font-semibold">{t("yourArmyText")}</h2>
 
       {selectedUnits.length === 0 ? (
-        <p className="text-sm text-slate-400">No units added yet.</p>
+        <p className="text-sm text-slate-400">{t("noUnitsAddedYet")}</p>
       ) : (
         <ul className="space-y-2">
           {selectedUnits.map((u) => (
@@ -49,7 +51,9 @@ export default function ArmySidebar({
               key={u.name}
               className="flex justify-between items-center border-b border-slate-600 pb-1"
             >
-              <span className="flex-1">{u.name} ×{u.count}</span>
+              <span className="flex-1">
+                {u.name} ×{u.count}
+              </span>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => onChangeCount(u.name, -1)}
@@ -76,16 +80,34 @@ export default function ArmySidebar({
       )}
 
       <div className="mt-4 border-t border-slate-600 pt-2 text-sm space-y-1">
-        <p>Total Units: <span className="font-semibold">{totalCount}</span></p>
-        <p>Total Points: <span className="font-semibold">{totalPoints}</span></p>
+        <p>
+          {t("totalUnits")}
+          <span className="font-semibold">{totalCount}</span>
+        </p>
+        <p>
+          {t("totalPoints")}
+          <span className="font-semibold">{totalPoints}</span>
+        </p>
         {minUnits !== undefined && (
-          <p>Min Units Required: <span className="font-semibold">{minUnits}</span></p>
+          <p>
+            {t("minUnitsRequired")}
+            <span className="font-semibold">{minUnits}</span>
+          </p>
         )}
         {thresholdStep > 0 && (
-          <p>Threshold Rule: every {thresholdStep} pts → ×{multiplier}</p>
+          <p>
+            {t("thresholdRule")}
+            {thresholdStep} pts → ×{multiplier}
+          </p>
         )}
-        <p className={`font-semibold ${basicValid && dynamicValid ? 'text-green-400' : 'text-red-400'}`}>
-          {basicValid && dynamicValid ? '✅ All constraints satisfied' : '❌ Constraint violation'}
+        <p
+          className={`font-semibold ${
+            basicValid && dynamicValid ? "text-green-400" : "text-red-400"
+          }`}
+        >
+          {basicValid && dynamicValid
+            ? t("allConstraintsSatisfied")
+            : t("constraintsViolated")}
         </p>
 
         {!dynamicValid && (
@@ -100,9 +122,11 @@ export default function ArmySidebar({
           <button
             onClick={onExport}
             className="py-2 w-full bg-indigo-600 hover:bg-indigo-500 text-white text-sm rounded disabled:opacity-50"
-            disabled={selectedUnits.length === 0 || !basicValid || !dynamicValid}
+            disabled={
+              selectedUnits.length === 0 || !basicValid || !dynamicValid
+            }
           >
-            📄 Download PDF
+            {t("downloadPDF")}
           </button>
 
           <button
@@ -110,7 +134,7 @@ export default function ArmySidebar({
             className="py-2 w-full bg-green-600 hover:bg-green-500 text-white text-sm rounded disabled:opacity-50"
             disabled={isSaveDisabled}
           >
-             {selectedArmyId ? '💾 Save Changes' : '💾 Save Army'}
+            {selectedArmyId ? t("saveChanges") : t("saveArmy")}
           </button>
 
           {selectedArmyId && (
@@ -118,11 +142,11 @@ export default function ArmySidebar({
               onClick={onDelete}
               className="py-2 w-full bg-red-600 hover:bg-red-500 text-white text-sm rounded"
             >
-              🗑️ Delete Army
+              {t("deleteArmy")}
             </button>
           )}
         </div>
       </div>
     </div>
-  )
+  );
 }

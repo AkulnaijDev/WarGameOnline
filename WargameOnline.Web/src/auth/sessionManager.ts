@@ -1,27 +1,21 @@
-import { API } from '../lib/api'
+import { API } from "../lib/api";
+import { useTranslation } from "react-i18next";
 
-/**
- * Logout totale: redirect + clear
- */
 export function logout() {
-  // Eventualmente: clear token in auth context
-  window.location.href = '/login'
+  window.location.href = "/login";
 }
 
-/**
- * Tenta di rigenerare il token chiamando /api/auth/refresh
- * Assumiamo che il cookie HttpOnly refreshToken sia già presente
- */
 export async function tryRefreshToken(): Promise<string> {
+  const { t } = useTranslation();
   const res = await fetch(`${API.authRefresh}`, {
-    method: 'POST',
-    credentials: 'include' // 👈 importante per mandare il cookie
-  })
+    method: "POST",
+    credentials: "include",
+  });
 
   if (!res.ok) {
-    throw new Error('Impossibile rigenerare la sessione')
+    throw new Error(t("impossibleRegenerateSession"));
   }
 
-  const data = await res.json()
-  return data.token
+  const data = await res.json();
+  return data.token;
 }

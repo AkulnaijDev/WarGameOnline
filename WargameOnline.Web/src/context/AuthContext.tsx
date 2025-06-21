@@ -1,6 +1,9 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { resetSocket } from '../hooks/useSocket'
 import { API } from '../lib/api'
+import { useTranslation } from "react-i18next";
+
+
 
 type AuthContextType = {
   token: string | null
@@ -18,7 +21,7 @@ const AuthContext = createContext<AuthContextType | null>(null)
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [token, setToken] = useState<string | null>(null)
   const [currentUserId, setCurrentUserId] = useState<number | null>(null)
-
+  const { t } = useTranslation();
   useEffect(() => {
     if (!token) {
       setCurrentUserId(null)
@@ -41,7 +44,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       body: JSON.stringify({ email, password }),
     })
 
-    if (!res.ok) throw new Error('Login failed')
+    if (!res.ok) throw new Error(t('loginFailed'))
 
     const data = await res.json()
     setToken(data.token)
@@ -62,17 +65,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       body: JSON.stringify({ username, email, password }),
     })
 
-    if (!res.ok) throw new Error('Registration failed')
+    if (!res.ok) throw new Error(t('registrationFailed'))
   }
 
   const getMe = async () => {
-    if (!token) throw new Error('Missing token')
+    if (!token) throw new Error(t('missingToken'))
 
     const res = await fetch(API.friendsMe, {
       headers: { Authorization: `Bearer ${token}` },
     })
 
-    if (!res.ok) throw new Error('Unauthorized')
+    if (!res.ok) throw new Error(t('unauthorized'))
     return await res.json()
   }
 
@@ -80,7 +83,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     <AuthContext.Provider
       value={{
         token,
-        setToken, // 👈 Aggiunto qui
+        setToken,
         currentUserId,
         isAuthenticated: !!token,
         login,
@@ -95,7 +98,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 }
 
 export const useAuth = () => {
+  const { t } = useTranslation();
   const ctx = useContext(AuthContext)
-  if (!ctx) throw new Error('useAuth must be used within AuthProvider')
+  if (!ctx) throw new Error(t('authProviderAlert'))
   return ctx
 }

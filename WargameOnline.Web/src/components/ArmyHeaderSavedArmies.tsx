@@ -1,34 +1,36 @@
-import { Game, ArmySummary, Army, Mode } from '../types/types'
+import { Game, ArmySummary, Army, Mode } from "../types/types";
+import { useTranslation } from "react-i18next";
 
 type Props = {
-  game: Game | null
-  savedArmies: ArmySummary[] | Army[]
-  selectedArmyId: number | null
-  onSelectArmy: (id: number) => void | Promise<void>
-  mode: Mode // 👈 aggiunto!
-}
+  game: Game | null;
+  savedArmies: ArmySummary[] | Army[];
+  selectedArmyId: number | null;
+  onSelectArmy: (id: number) => void | Promise<void>;
+  mode: Mode;
+};
 
 export default function ArmyHeaderSavedArmies({
   game,
   savedArmies,
   selectedArmyId,
   onSelectArmy,
-  mode
+  mode,
 }: Props) {
+
+  const { t } = useTranslation();
+  
   return (
     <div className="w-full max-w-2xl space-y-3">
-      {mode !== 'create' &&  game && (
+      {mode !== "create" && game && (
         <select
-          value={selectedArmyId ?? ''}
+          value={selectedArmyId ?? ""}
           onChange={(e) => {
-            const id = Number(e.target.value)
-            if (id > 0) onSelectArmy(id)
+            const id = Number(e.target.value);
+            if (id > 0) onSelectArmy(id);
           }}
           className="w-full p-2 bg-slate-800 text-white rounded mt-2"
         >
-          {!selectedArmyId && (
-            <option value="">-- Carica una lista salvata --</option>
-          )}
+          {!selectedArmyId && <option value="">{t("loadSavedList")}</option>}
 
           {savedArmies
             .filter((a) => a.gameId === game.id)
@@ -40,5 +42,5 @@ export default function ArmyHeaderSavedArmies({
         </select>
       )}
     </div>
-  )
+  );
 }

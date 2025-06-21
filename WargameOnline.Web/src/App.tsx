@@ -1,39 +1,36 @@
-// App.tsx
-
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { AuthProvider, useAuth } from './context/AuthContext'
-import LanguageSelector from './components/LanguageSelector'
-import AuthPage from './pages/AuthPage'
-import HomePage from './pages/HomePage'
-import { FriendsProvider, useFriends } from './context/FriendsContext'
-import FriendsSidebar from './components/FriendsSidebar'
-import ChatWindow from './components/ChatWindow'
-import ArmyCreator from './pages/ArmyCreator'
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import LanguageSelector from "./components/LanguageSelector";
+import AuthPage from "./pages/AuthPage";
+import HomePage from "./pages/HomePage";
+import { FriendsProvider, useFriends } from "./context/FriendsContext";
+import FriendsSidebar from "./components/FriendsSidebar";
+import ChatWindow from "./components/ChatWindow";
+import ArmyCreator from "./pages/ArmyCreator";
 
 function ProtectedRoute({ children }: { children: JSX.Element }) {
-  const { token } = useAuth()
-  return token ? children : <Navigate to="/auth" replace />
+  const { token } = useAuth();
+  return token ? children : <Navigate to="/auth" replace />;
 }
 
 function ChatLayer() {
-  const { activeChats, closeChat } = useFriends()
+  const { activeChats, closeChat } = useFriends();
 
   return (
     <>
-      {activeChats.map(friend => (
+      {activeChats.map((friend) => (
         <ChatWindow
           key={friend.id}
           chatUser={friend}
           onClose={() => closeChat(friend.id)}
         />
-
       ))}
     </>
-  )
+  );
 }
 
 function MainApp() {
-  const { token, currentUserId } = useAuth()
+  const { token, currentUserId } = useAuth();
 
   return token && currentUserId !== null ? (
     <FriendsProvider token={token} currentUserId={currentUserId}>
@@ -46,13 +43,13 @@ function MainApp() {
           <Routes>
             <Route path="/auth" element={<AuthPage />} />
 
-            <Route 
-              path="/armyCreator" 
+            <Route
+              path="/armyCreator"
               element={
                 <ProtectedRoute>
                   <ArmyCreator />
                 </ProtectedRoute>
-              } 
+              }
             />
 
             <Route
@@ -78,7 +75,7 @@ function MainApp() {
         <Route path="*" element={<Navigate to="/auth" replace />} />
       </Routes>
     </BrowserRouter>
-  )
+  );
 }
 
 export default function App() {
@@ -86,5 +83,5 @@ export default function App() {
     <AuthProvider>
       <MainApp />
     </AuthProvider>
-  )
+  );
 }

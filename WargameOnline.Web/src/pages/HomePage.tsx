@@ -1,25 +1,23 @@
-import { useAuth } from '../context/AuthContext'
-import { useTranslation } from 'react-i18next'
-import { jwtDecode } from 'jwt-decode'
-import { useNavigate } from 'react-router-dom'
-import Sidebar from '../components/Sidebar'
+import { useAuth } from "../context/AuthContext";
+import { useTranslation } from "react-i18next";
+import { jwtDecode } from "jwt-decode";
+import Sidebar from "../components/Sidebar";
 
 type JwtPayload = {
-  [key: string]: string
-}
+  [key: string]: string;
+};
 
 export default function HomePage() {
-  const { token, logout } = useAuth()
-  const { t } = useTranslation()
-const navigate = useNavigate()
-  let username = 'UnknownUser'
+  const { token } = useAuth();
+  const { t } = useTranslation();
+  let username = "UnknownUser";
 
   if (token) {
-    const payload = jwtDecode<JwtPayload>(token)
+    const payload = jwtDecode<JwtPayload>(token);
     username =
-      payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] ||
+      payload["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"] ||
       payload.name ||
-      'UnknownUser'
+      "UnknownUser";
   }
 
   return (
@@ -27,9 +25,11 @@ const navigate = useNavigate()
       <Sidebar />
 
       <main className="flex-1 p-6">
-        <h1 className="text-2xl font-semibold mb-4">{username} — {t('welcomeHome')}</h1>
-        <p className="text-gray-300">{t('welcomeHomeSubtext')}</p>
+        <h1 className="text-2xl font-semibold mb-4">
+          {username} — {t("welcomeHome")}
+        </h1>
+        <p className="text-gray-300">{t("welcomeHomeSubtext")}</p>
       </main>
     </div>
-  )
+  );
 }
