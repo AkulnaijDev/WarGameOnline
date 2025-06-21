@@ -29,7 +29,6 @@ export default function ChatWindow({
     isOnline: false,
   }
 
-  // 📐 Offset dinamico per evitare finestre sovrapposte
   const initialX = window.innerWidth - 360 - (friend.id % 3) * 40
   const initialY = window.innerHeight - 420 - (friend.id % 3) * 40
   const [position, setPosition] = useState({ x: initialX, y: initialY })
@@ -44,7 +43,7 @@ export default function ChatWindow({
     e.preventDefault()
     const trimmed = input.trim()
     if (!trimmed || !friend.isOnline) {
-      setOfflineWarning('Questo utente è offline. Il messaggio non è stato inviato.')
+      setOfflineWarning(t('offlineUserNoMsgSent'))
       return
     }
 
@@ -159,7 +158,7 @@ export default function ChatWindow({
 
       {!friend.isOnline && (
         <div className="text-xs text-red-500 px-3 py-2 border-t border-border bg-slate-100">
-          {t('userOffline') || 'Questo utente è offline. Non puoi inviare messaggi al momento.'}
+          {t('userOffline') || t('userOfflineCantSend')}
         </div>
       )}
 

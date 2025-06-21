@@ -1,5 +1,3 @@
-// src/components/Sidebar.tsx
-import React from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useTranslation } from 'react-i18next'
@@ -10,7 +8,6 @@ export default function Sidebar() {
   const navigate = useNavigate()
   const { pathname } = useLocation()
 
-  // Non mostrare la sidebar su login/register
   if (pathname === '/login' || pathname === '/register') return null
 
   return (

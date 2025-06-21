@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { useState, useEffect } from 'react'
 
-//prese da flagcdn
+//from flagcdn
 const flags = {
   en: '/flags/en.svg',
   it: '/flags/it.svg',

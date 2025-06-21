@@ -35,7 +35,7 @@ export default function FriendsSidebar() {
       setFeedback(res.ok ? `✅ ${t('friendshipRequestSent')}` : `❌ ${t('friendshipRequestError')}`)
       if (res.ok) setUsername('')
     } catch {
-      setFeedback('❌ Errore di rete.')
+      setFeedback(t('networkError'))
     }
     setTimeout(() => setFeedback(''), 4000)
   }

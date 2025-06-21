@@ -1,5 +1,5 @@
-import { HubConnectionBuilder, HubConnection } from '@microsoft/signalr'
-import { API } from '../lib/api'
+import { HubConnectionBuilder, HubConnection } from "@microsoft/signalr"
+import { API } from "../lib/api"
 
 declare global {
   interface Window {
@@ -22,48 +22,51 @@ export function initializeSocket(
   extraHandlers?: {
     onFriendRemoved?: (id: number) => void
     onFriendRequestReceived?: (user: { id: number; username: string }) => void
-    onFriendRequestAccepted?: (friend: { id: number; username: string; isOnline: boolean }) => void,
+    onFriendRequestAccepted?: (friend: {
+      id: number
+      username: string
+      isOnline: boolean
+    }) => void
     onFriendOnline?: (id: number) => void
     onFriendOffline?: (id: number) => void
-
-  }
+  },
+  t?: (key: string) => string
 ) {
-  if (typeof window === 'undefined') return
+  if (typeof window === "undefined") return
   if (connection) return
 
   connection = new HubConnectionBuilder()
     .withUrl(API.friendsChatHub, {
-      accessTokenFactory: () => token,
+      accessTokenFactory: () => token
     })
     .withAutomaticReconnect()
     .build()
 
   window.connection = connection
 
-  connection.on('FriendOnline', (id) => onStatusChange?.(id, true))
-  connection.on('FriendOffline', (id) => onStatusChange?.(id, false))
-  connection.on('ReceiveMessage', (fromId, text) => {
+  connection.on("FriendOnline", (id) => onStatusChange?.(id, true))
+  connection.on("FriendOffline", (id) => onStatusChange?.(id, false))
+  connection.on("ReceiveMessage", (fromId, text) => {
     onMessage(fromId, text)
   })
-  connection.on('FriendRemoved', (id) => {
-    // Rimuove amico localmente
+  connection.on("FriendRemoved", (id) => {
     extraHandlers?.onFriendRemoved?.(id)
   })
-
-  // 🎯 New SignalR handlers
-  connection.on('FriendRequestReceived', (user) => {
-    console.log('📬 Nuova richiesta ricevuta:', user)
+  connection.on("FriendRequestReceived", (user) => {
+    if (t) console.log(t("newRequestReceived"), user)
     extraHandlers?.onFriendRequestReceived?.(user)
   })
-
-  connection.on('FriendRequestAccepted', (friend) => {
-    console.log('✅ Richiesta accettata, nuovo amico:', friend)
+  connection.on("FriendRequestAccepted", (friend) => {
+    if (t) console.log(t("requestAccepted"), friend)
     extraHandlers?.onFriendRequestAccepted?.(friend)
   })
 
   connection
     .start()
-    .then(() => console.log('🛰️ SignalR is connected'))
-    .catch((err) => console.error('❌ SignalR connection failed:', err))
+    .then(() => {
+      if (t) console.log(t("signalRIsConnected"))
+    })
+    .catch((err) => {
+      if (t) console.error(t("signalRConnectionFailed"), err)
+    })
 }
-
