@@ -1,6 +1,42 @@
-CREATE TABLE Users (
-  Id INTEGER PRIMARY KEY AUTOINCREMENT,
-  Username TEXT NOT NULL,
-  Email TEXT NOT NULL UNIQUE,
-  PasswordHash TEXT NOT NULL
+-- users
+CREATE TABLE users (
+  id TEXT PRIMARY KEY,
+  email TEXT UNIQUE NOT NULL,
+  password TEXT NOT NULL
+);
+
+-- games
+CREATE TABLE games (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL
+);
+
+-- factions
+CREATE TABLE factions (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  game_id TEXT NOT NULL,
+  FOREIGN KEY (game_id) REFERENCES games(id)
+);
+
+-- armies
+CREATE TABLE armies (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  user_id TEXT NOT NULL,
+  faction_id TEXT NOT NULL,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id),
+  FOREIGN KEY (faction_id) REFERENCES factions(id)
+);
+
+-- army_units (unità presenti in una armata salvata)
+CREATE TABLE army_units (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  points INTEGER NOT NULL,
+  count INTEGER NOT NULL,
+  army_id TEXT NOT NULL,
+  FOREIGN KEY (army_id) REFERENCES armies(id)
 );

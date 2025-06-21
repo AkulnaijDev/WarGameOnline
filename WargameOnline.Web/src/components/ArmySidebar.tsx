@@ -1,5 +1,4 @@
-// src/components/ArmySidebar.tsx
-import React from 'react'
+
 import { UnitWithCount } from '../types/types'
 
 type Props = {
@@ -12,7 +11,7 @@ type Props = {
   dynamicValid: boolean
   violations: string[]
   minUnits?: number
-  selectedArmyId: string | null
+  selectedArmyId: number | null
   onChangeCount: (unitName: string, delta: number) => void
   onExport: () => void
   onSave: () => void

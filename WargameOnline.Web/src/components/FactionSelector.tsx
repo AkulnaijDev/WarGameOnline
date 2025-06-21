@@ -1,27 +1,25 @@
-// FactionSelector.tsx
-import React from 'react'
+import { Faction } from '../types/types'
 
 type Props = {
-  faction: string
-  setFaction: (f: string) => void
-  factions: [string, { displayName?: string }][] // tipizzato generico
-  clearSelection: () => void
+  faction: Faction | null
+  setFaction: (f: Faction | null) => void
+  factions: Faction[]
 }
 
-export default function FactionSelector({ faction, setFaction, factions, clearSelection }: Props) {
+export default function FactionSelector({ faction, setFaction, factions }: Props) {
   return (
     <select
-      value={faction}
+      value={faction?.id ?? ''}
       onChange={(e) => {
-        setFaction(e.target.value)
-        clearSelection()
+        const selected = factions.find(f => f.id === Number(e.target.value)) || null
+        setFaction(selected)
       }}
-      className="w-full p-2 bg-slate-800 text-white rounded mb-4"
+      className="w-full p-2 mb-5 bg-slate-800 text-white rounded"
     >
-      <option value="">-- Select Faction --</option>
-      {factions.map(([key, val]) => (
-        <option key={key} value={key}>
-          {val.displayName || key}
+      <option value="">-- Seleziona una fazione --</option>
+      {factions.map(f => (
+        <option key={f.id} value={f.id}>
+          {f.name}
         </option>
       ))}
     </select>

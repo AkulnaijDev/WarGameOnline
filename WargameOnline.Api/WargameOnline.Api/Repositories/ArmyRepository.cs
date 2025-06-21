@@ -22,116 +22,152 @@ public class ArmyRepository : IArmyRepository
     public async Task<IEnumerable<Army>> GetByUserIdAsync(int userId)
     {
         const string query = """
-    SELECT Id, Name, faction_id AS FactionId
-    FROM armies
-    WHERE user_id = @UserId
-""";
+        SELECT id, name, game_id, faction_id, user_id
+        FROM armies
+        WHERE user_id = @UserId
+    """;
 
         using var conn = _context.Create();
         return await conn.QueryAsync<Army>(query, new { UserId = userId });
     }
 
-    public async Task<Army?> GetByIdAsync(int armyId)
-    {
-        const string armyQuery = """
-            SELECT Id, Name, Game, Faction, user_id AS UserId
-            FROM armies
-            WHERE Id = @Id
-        """;
 
-        const string unitsQuery = """
-            SELECT Id, Name, Points, Count, army_id AS ArmyId
-            FROM army_units
-            WHERE army_id = @Id
-        """;
+    public async Task<Army?> GetByIdAsync(int id)
+    {
+        const string queryArmy = """
+        SELECT id, name, game_id, faction_id, user_id
+        FROM armies
+        WHERE id = @Id
+    """;
+
+        const string queryUnits = """
+        SELECT unit_id, game_id, faction_id, count
+        FROM army_units
+        WHERE army_id = @Id
+    """;
 
         using var conn = _context.Create();
 
-        var army = await conn.QuerySingleOrDefaultAsync<Army>(armyQuery, new { Id = armyId });
+        var army = await conn.QuerySingleOrDefaultAsync<Army>(queryArmy, new { Id = id });
         if (army == null) return null;
 
-        var units = (await conn.QueryAsync<ArmyUnit>(unitsQuery, new { Id = armyId })).ToList();
-        army.Units = units;
+        var units = await conn.QueryAsync<ArmyUnit>(queryUnits, new { Id = id });
+        army.Units = units.ToList();
         return army;
     }
+
 
     public async Task<int> CreateAsync(Army army)
     {
         const string armyInsert = """
-            INSERT INTO armies (name, game, faction, user_id)
-            VALUES (@Name, @Game, @Faction, @UserId);
-            SELECT last_insert_rowid();
-        """;
+    INSERT INTO armies (name, game_id, faction_id, user_id)
+    VALUES (@Name, @GameId, @FactionId, @UserId);
+    SELECT last_insert_rowid();
+""";
 
         const string unitInsert = """
-            INSERT INTO army_units (name, points, count, army_id)
-            VALUES (@Name, @Points, @Count, @ArmyId)
-        """;
+    INSERT INTO army_units (army_id, unit_id, game_id, faction_id, count)
+    VALUES (@ArmyId, @UnitId, @GameId, @FactionId, @Count);
+""";
 
         using var conn = _context.Create();
         conn.Open();
         using var tx = conn.BeginTransaction();
 
-        var newId = await conn.ExecuteScalarAsync<int>(armyInsert, army, tx);
-        foreach (var unit in army.Units)
+        try
         {
-            await conn.ExecuteAsync(unitInsert, new
+            var newArmyId = await conn.ExecuteScalarAsync<long>(armyInsert, new
             {
-                unit.Name,
-                unit.Points,
-                unit.Count,
-                ArmyId = newId
+                army.Name,
+                army.GameId,
+                army.FactionId,
+                army.UserId
             }, tx);
+
+            foreach (var unit in army.Units)
+            {
+                await conn.ExecuteAsync(unitInsert, new
+                {
+                    ArmyId = newArmyId,
+                    unit.UnitId,
+                    unit.GameId,
+                    unit.FactionId,
+                    unit.Count
+                }, tx);
+            }
+
+            tx.Commit();
+            return (int)newArmyId;
+        }
+        catch (Exception ex)
+        {
+            tx.Rollback();
+            throw new Exception("Errore durante il salvataggio dell'armata", ex);
         }
 
-        tx.Commit();
-        return newId;
     }
+
 
     public async Task UpdateAsync(Army army)
     {
         const string updateQuery = """
-            UPDATE armies
-            SET name = @Name, game = @Game, faction = @Faction
-            WHERE id = @Id
-        """;
+        UPDATE armies
+        SET name = @Name, game_id = @GameId, faction_id = @FactionId
+        WHERE id = @Id
+    """;
 
         const string deleteUnits = "DELETE FROM army_units WHERE army_id = @Id";
 
         const string insertUnits = """
-            INSERT INTO army_units (name, points, count, army_id)
-            VALUES (@Name, @Points, @Count, @ArmyId)
-        """;
+        INSERT INTO army_units (army_id, unit_id, game_id, faction_id, count)
+        VALUES (@ArmyId, @UnitId, @GameId, @FactionId, @Count)
+    """;
 
         using var conn = _context.Create();
+        conn.Open(); // obbligatorio per poter usare la transazione
+
         using var tx = conn.BeginTransaction();
 
-        await conn.ExecuteAsync(updateQuery, army, tx);
-        await conn.ExecuteAsync(deleteUnits, new { army.Id }, tx);
-
-        foreach (var unit in army.Units)
+        try
         {
-            await conn.ExecuteAsync(insertUnits, new
+            await conn.ExecuteAsync(updateQuery, new
             {
-                unit.Name,
-                unit.Points,
-                unit.Count,
-                ArmyId = army.Id
+                army.Name,
+                army.GameId,
+                army.FactionId,
+                army.Id
             }, tx);
+
+            await conn.ExecuteAsync(deleteUnits, new { army.Id }, tx);
+
+            foreach (var unit in army.Units)
+            {
+                await conn.ExecuteAsync(insertUnits, new
+                {
+                    ArmyId = army.Id,
+                    UnitId = unit.UnitId,
+                    GameId = unit.GameId,
+                    FactionId = unit.FactionId,
+                    Count = unit.Count
+                }, tx);
+            }
+
+            tx.Commit();
         }
-
-        tx.Commit();
+        catch (Exception ex)
+        {
+            tx.Rollback();
+            throw new Exception("Errore durante l'aggiornamento dell'armata", ex);
+        }
     }
 
-    public async Task DeleteAsync(int id)
+
+    public async Task DeleteAsync(int armyId)
     {
+        const string deleteArmy = "DELETE FROM armies WHERE id = @Id";
         using var conn = _context.Create();
-        using var tx = conn.BeginTransaction();
-
-        await conn.ExecuteAsync("DELETE FROM army_units WHERE army_id = @Id", new { Id = id }, tx);
-        await conn.ExecuteAsync("DELETE FROM armies WHERE id = @Id", new { Id = id }, tx);
-
-        tx.Commit();
+        await conn.ExecuteAsync(deleteArmy, new { Id = armyId });
     }
+
 }
 
