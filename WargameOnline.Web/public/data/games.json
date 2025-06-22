@@ -1,7 +1,7 @@
 [
   {
     "id": 1,
-    "name": "Fantasy Wars",
+    "name": "Warmaster",
     "factions": [
       {
         "id": 1,
@@ -73,6 +73,65 @@
         "constraintsByThreshold": {
           "step": 1000
         }
+      },
+      {
+        "id": 3,
+        "name": "empirini",
+        "displayName": "EMPIRINI",
+        "units": [
+          {
+            "id": 8,
+            "name": "Halberdiers",
+            "type":"Infantry",
+            "attacks": [{"melee":3}],
+            "hits":3,
+            "armour":6,
+            "command":0,
+            "unitSize": 3,
+            "pointsPerUnit": 45,
+            "thresholdConstraints": { "min": 2},
+            "rules": ["empiriniRules1"],
+            "description": "Tipi con alabarda",
+            "imagine":"halberdiers.jpg"
+          },
+          {
+            "id": 9,
+            "name": "Crossbowmen",
+            "type":"Infantry",
+            "attacks": [{"melee":3}, {"ranged":1}],
+            "hits":3,
+            "armour":0,
+            "command":0,
+            "unitSize": 3,
+            "pointsPerUnit": 55,
+            "thresholdConstraints": { "min": 2},
+            "rules": [],
+            "description": "Tipi con balestra",
+            "imagine":"crossbowmen.jpg"
+          }
+        ],
+        "constraintsByThreshold": {
+          "step": 1000
+        },
+        "armyRules":[
+          {
+            "name": "empiriniGenericRules1", "rule": "This faction has special rule!"
+          }
+        ],
+        "unitRules": [
+          {
+            "name": "empiriniRules1", "rule": "This unit has special rule!"
+          }
+        ],
+        "armySpells": [
+          {
+            "name": "Teleport",
+            "effect": "Effect of magic",
+            "rangeInCm": 30,
+            "difficultyToCast": 5,
+            "flavourText": "An ancientMagic!"
+          }
+        ]
       }
     ]
   },
