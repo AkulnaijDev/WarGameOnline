@@ -7,6 +7,7 @@ import { FriendsProvider, useFriends } from "./context/FriendsContext";
 import FriendsSidebar from "./components/FriendsSidebar";
 import ChatWindow from "./components/ChatWindow";
 import ArmyCreator from "./pages/ArmyCreator";
+import { Toaster } from 'react-hot-toast'
 
 function ProtectedRoute({ children }: { children: JSX.Element }) {
   const { token } = useAuth();
@@ -82,6 +83,7 @@ export default function App() {
   return (
     <AuthProvider>
       <MainApp />
+      <Toaster position="top-center" toastOptions={{ duration: 2500 }} />
     </AuthProvider>
   );
 }

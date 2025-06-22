@@ -5,14 +5,9 @@ i18n.use(initReactI18next).init({
   resources: {
     en: {
       translation: {
+
         //generic
         missingToken: "Missing token",
-        //errorSavingArmylist: "Error saving army list",
-        //expiredSession: "Session expired",
-        //nonJsonFormResponse: "Response is not JSON format",
-
-        //sessionManager.ts
-        //impossibleRegenerateSession: "Impossibile rigenerare la sessione",
 
         //armyHeader
         nameYourArmy: "Name your army...",
@@ -131,6 +126,8 @@ i18n.use(initReactI18next).init({
         loadArmy: "Load this army list",
         noSelectedListAlert:
           "⚠ No list selected. Choose a list to edit or go back to menu.",
+        armySavedSuccessfully: "Army list saved successfully",
+        armyDeletedSuccessfully: "Army list deleted successfully",
 
         //HomePage
         welcomeHome: "Welcome to your home page",

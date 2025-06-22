@@ -26,7 +26,7 @@ import {
   AddableUnit,
 } from "../types/types";
 import { useTranslation } from "react-i18next";
-
+import toast from "react-hot-toast";
 export default function ArmyCreator() {
   const [mode, setMode] = useState<Mode>("start");
   const [rawData, setRawData] = useState<any>({});
@@ -39,7 +39,7 @@ export default function ArmyCreator() {
   );
   const [savedArmies, setSavedArmies] = useState<ArmySummary[]>([]);
   const [selectedArmyId, setSelectedArmyId] = useState<number | null>(null);
- const { t } = useTranslation();
+  const { t } = useTranslation();
   const { token } = useAuth();
 
   useEffect(() => {
@@ -191,6 +191,8 @@ export default function ArmyCreator() {
 
       const updatedArmies = await fetchArmies(token);
       setSavedArmies(updatedArmies);
+
+      toast.success(t("armySavedSuccessfully"));
     } catch (err) {
       console.error(t("errorSavingArmy"), err);
     }
@@ -204,8 +206,11 @@ export default function ArmyCreator() {
       setSelectedUnits([]);
       setArmyName("");
       setMode("start");
+
       const updatedArmies = await fetchArmies(token);
       setSavedArmies(updatedArmies);
+      setGame(null);
+      toast.success(t("armyDeletedSuccessfully"));
     } catch (err) {
       console.error(t("errorDeletingArmy"), err);
     }
@@ -241,23 +246,27 @@ export default function ArmyCreator() {
   const exportPdf = () => {
     const doc = new jsPDF();
     doc.setFontSize(16);
-    doc.text(`${t('pdfArmy')} ${armyName || t('pdfUnnamed')}`, 10, 20);
+    doc.text(`${t("pdfArmy")} ${armyName || t("pdfUnnamed")}`, 10, 20);
     doc.setFontSize(12);
-    doc.text(`${t('pdfGame')} ${game?.name || "-"}`, 10, 30);
-    doc.text(`${t('pdfFaction')} ${faction?.name || "-"}`, 10, 37);
-    doc.text(`${t('pdfPoints')} ${totalPoints()}`, 10, 44);
-    doc.text(`${t('pdfUnits')} ${totalCount()}`, 10, 51);
-    doc.text(t('pdfUnitsSelected'), 10, 65);
+    doc.text(`${t("pdfGame")} ${game?.name || "-"}`, 10, 30);
+    doc.text(`${t("pdfFaction")} ${faction?.name || "-"}`, 10, 37);
+    doc.text(`${t("pdfPoints")} ${totalPoints()}`, 10, 44);
+    doc.text(`${t("pdfUnits")} ${totalCount()}`, 10, 51);
+    doc.text(t("pdfUnitsSelected"), 10, 65);
     let y = 72;
     selectedUnits.forEach((u) => {
-      doc.text(`${u.name} ×${u.count} (${u.points} ${t('pointsShortMinus')})`, 12, y);
+      doc.text(
+        `${u.name} ×${u.count} (${u.points} ${t("pointsShortMinus")})`,
+        12,
+        y
+      );
       y += 7;
     });
     const violations = validateDynamic();
     if (violations.length > 0) {
       y += 5;
       doc.setTextColor(200, 0, 0);
-      doc.text(t('pdfViolation'), 10, y);
+      doc.text(t("pdfViolation"), 10, y);
       y += 6;
       violations.forEach((v) => {
         doc.text(`• ${v}`, 12, y);
@@ -299,11 +308,12 @@ export default function ArmyCreator() {
             }}
             className="self-start mb-4 text-sm text-slate-400 hover:underline"
           >
-            {t('backToMenu')}
+            {t("backToMenu")}
           </button>
 
           <ArmyHeaderSavedArmies
             game={game}
+            faction={faction}
             savedArmies={savedArmies}
             selectedArmyId={selectedArmyId}
             onSelectArmy={handleLoadArmy}
@@ -311,7 +321,7 @@ export default function ArmyCreator() {
           />
 
           <div className="bg-yellow-700 text-white p-4 rounded mt-6 max-w-xl">
-            {t('noSelectedListAlert')}
+            {t("noSelectedListAlert")}
           </div>
         </main>
       </div>
@@ -326,11 +336,11 @@ export default function ArmyCreator() {
           onClick={() => {
             setMode("start");
             setSelectedArmyId(null);
-            setGame(null); 
+            setGame(null);
           }}
           className="self-start mb-4 text-sm text-slate-400 hover:underline"
         >
-           {t('backToMenu')}
+          {t("backToMenu")}
         </button>
 
         <ArmyHeader
@@ -366,6 +376,7 @@ export default function ArmyCreator() {
 
         <ArmyHeaderSavedArmies
           game={game}
+          faction={faction}
           savedArmies={savedArmies.filter((a) => game && a.gameId === game.id)}
           selectedArmyId={selectedArmyId}
           onSelectArmy={handleLoadArmy}

@@ -1,16 +1,18 @@
-import { Game, ArmySummary, Army, Mode } from '../types/types'
+import { Game, Faction, ArmySummary, Army, Mode } from '../types/types'
 import { useTranslation } from "react-i18next";
 
 type Props = {
   game: Game | null
+  faction: Faction | null
   savedArmies: ArmySummary[] | Army[]
   selectedArmyId: number | null
   onSelectArmy: (id: number) => void | Promise<void>
-  mode: Mode // 👈 aggiunto!
+  mode: Mode
 }
 
 export default function ArmyHeaderSavedArmies({
   game,
+  faction,
   savedArmies,
   selectedArmyId,
   onSelectArmy,
@@ -19,9 +21,12 @@ export default function ArmyHeaderSavedArmies({
 
   const { t } = useTranslation();
 
-  const visibleArmies = game
-    ? savedArmies.filter((a) => a.gameId === game.id)
-    : savedArmies
+  const visibleArmies = game && faction
+  ? savedArmies.filter(
+      (a) => a.gameId === game.id && a.factionId === faction.id
+    )
+  : savedArmies
+
 
   return (
     <div className="w-full max-w-2xl space-y-3">
@@ -40,7 +45,8 @@ export default function ArmyHeaderSavedArmies({
 
           {visibleArmies.map((a) => (
             <option key={a.id} value={a.id}>
-              {a.name} (ID: {a.id})
+              {/* {a.name} (ID: {a.id}) */}
+              {a.name}
             </option>
           ))}
         </select>
