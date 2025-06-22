@@ -8,7 +8,12 @@ export default function FactionInfoBox({ faction }: Props) {
   if (!faction) return null;
 
   return (
-    <div className="w-full max-w-3xl p-4 bg-slate-800 text-white rounded mt-6 shadow-lg space-y-6">
+    <div className="w-full max-w-3xl p-4 bg-slate-800 text-white rounded shadow-lg space-y-6">
+      {/* Nome fazione */}
+      <h2 className="text-2xl font-bold text-center">
+        {faction.displayName || faction.name}
+      </h2>
+
       {/* Immagine fazione */}
       {faction.image && (
         <img
@@ -18,44 +23,48 @@ export default function FactionInfoBox({ faction }: Props) {
         />
       )}
 
-      {/* Nome fazione */}
-      <h2 className="text-2xl font-bold text-center">
-        {faction.displayName || faction.name}
-      </h2>
+      <div className="flex flex-col lg:flex-row gap-6 mt-4">
+        {/* Regole speciali */}
+        {faction.armyRules && faction.armyRules.length > 0 && (
+          <div>
+            <h3 className="text-xl font-semibold mb-2">🛡️ Regole speciali</h3>
+            <ul className="list-disc list-inside space-y-1">
+              {faction.armyRules.map((rule) => (
+                <li key={rule.name}>
+                  <strong>{rule.name}</strong>: {rule.rule}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
-      {/* Regole speciali */}
-      {faction.armyRules && faction.armyRules.length > 0 && (
-        <div>
-          <h3 className="text-xl font-semibold mb-2">🛡️ Regole speciali</h3>
-          <ul className="list-disc list-inside space-y-1">
-            {faction.armyRules.map((rule) => (
-              <li key={rule.name}>
-                <strong>{rule.name}</strong>: {rule.rule}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {/* Incantesimi */}
-      {faction.armySpells && faction.armySpells.length > 0 && (
-        <div>
-          <h3 className="text-xl font-semibold mb-2">✨ Incantesimi disponibili</h3>
-          <ul className="space-y-3">
-            {faction.armySpells.map((spell) => (
-              <li key={spell.name} className="border-l-4 border-blue-400 pl-3">
-                <div className="font-bold text-blue-300">{spell.name}</div>
-                <div className="text-sm text-slate-300 italic">{spell.flavourText}</div>
-                <div className="text-sm">
-                  <span className="text-white">Effetto:</span> {spell.effect} •
-                  <span className="ml-2">Range:</span> {spell.rangeInCm} cm •
-                  <span className="ml-2">Diff:</span> {spell.difficultyToCast}
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+        {/* Incantesimi */}
+        {faction.armySpells && faction.armySpells.length > 0 && (
+          <div>
+            <h3 className="text-xl font-semibold mb-2">
+              ✨ Incantesimi disponibili
+            </h3>
+            <ul className="space-y-3">
+              {faction.armySpells.map((spell) => (
+                <li
+                  key={spell.name}
+                  className="border-l-4 border-blue-400 pl-3"
+                >
+                  <div className="font-bold text-blue-300">{spell.name}</div>
+                  <div className="text-sm text-slate-300 italic">
+                    {spell.flavourText}
+                  </div>
+                  <div className="text-sm">
+                    <span className="text-white">Effetto:</span> {spell.effect}{" "}
+                    •<span className="ml-2">Range:</span> {spell.rangeInCm} cm •
+                    <span className="ml-2">Diff:</span> {spell.difficultyToCast}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

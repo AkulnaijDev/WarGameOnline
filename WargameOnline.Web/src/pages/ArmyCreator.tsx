@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { jsPDF } from "jspdf";
+import { exportPdf } from "../utils/pdf";
 import Sidebar from "../components/Sidebar";
 import ArmyStartMenu from "../components/ArmyStartMenu";
-import ArmyHeader from "../components/ArmyHeader";
+import ArmyNameInput from "../components/ArmyNameInput";
+import ArmyGameSelector from "../components/ArmyGameSelector";
 import ArmyHeaderSavedArmies from "../components/ArmyHeaderSavedArmies";
 import ArmySidebar from "../components/ArmySidebar";
 import FactionSelector from "../components/FactionSelector";
@@ -67,12 +68,11 @@ export default function ArmyCreator() {
     thresholdStep > 0 ? Math.floor(totalPoints() / thresholdStep) + 1 : 1;
 
   function totalPoints() {
-  return selectedUnits.reduce(
-    (sum, u) => sum + (u.pointsPerUnit ?? u.points ?? 0) * u.count,
-    0
-  );
-}
-
+    return selectedUnits.reduce(
+      (sum, u) => sum + (u.pointsPerUnit ?? u.points ?? 0) * u.count,
+      0
+    );
+  }
 
   function totalCount() {
     return selectedUnits.reduce((sum, u) => sum + u.count, 0);
@@ -248,112 +248,17 @@ export default function ArmyCreator() {
     }
   };
 
-  const exportPdf = () => {
-    const doc = new jsPDF();
-
-    // Titolo armata
-    doc.setFontSize(16);
-    doc.text(`${t("pdfArmy")} ${armyName || t("pdfUnnamed")}`, 10, 20);
-
-    doc.setFontSize(12);
-    doc.text(`${t("pdfGame")} ${game?.name || "-"}`, 10, 30);
-    doc.text(
-      `${t("pdfFaction")} ${faction?.displayName || faction?.name || "-"}`,
-      10,
-      37
+  const handleExportPdf = () => {
+    exportPdf(
+      t,
+      armyName,
+      game,
+      faction,
+      selectedUnits,
+      totalPoints(),
+      totalCount(),
+      validateDynamic
     );
-    doc.text(`${t("pdfPoints")} ${totalPoints()}`, 10, 44);
-    doc.text(`${t("pdfUnits")} ${totalCount()}`, 10, 51);
-
-    let y = 60;
-
-    // Immagine fazione (solo se presente — richiede plugin image support!)
-    if (faction?.image) {
-      const img = new Image();
-      img.src = `/assets/factions/${faction.image}`;
-      doc.addImage(img, "JPEG", 150, 15, 40, 40);
-    }
-
-    // 🛡️ Regole speciali della fazione
-    if (faction?.armyRules?.length) {
-      doc.setFontSize(12);
-      doc.text("🛡️ Regole della fazione:", 10, y);
-      y += 6;
-      faction.armyRules.forEach((r) => {
-        doc.text(`• ${r.name}: ${r.rule}`, 12, y);
-        y += 6;
-      });
-      y += 4;
-    }
-
-    // ✨ Incantesimi (se presenti)
-    if (faction?.armySpells?.length) {
-      doc.text("✨ Incantesimi disponibili:", 10, y);
-      y += 6;
-      faction.armySpells.forEach((s) => {
-        doc.text(
-          `• ${s.name} — ${s.effect} (Range: ${s.rangeInCm}cm | Diff: ${s.difficultyToCast})`,
-          12,
-          y
-        );
-        y += 6;
-        if (s.flavourText) {
-          doc.setFontSize(10);
-          doc.setTextColor(120);
-          doc.text(`“${s.flavourText}”`, 14, y);
-          y += 5;
-          doc.setFontSize(12);
-          doc.setTextColor(0);
-        }
-      });
-      y += 4;
-    }
-
-    // ⚔️ Unità selezionate
-    doc.text(t("pdfUnitsSelected"), 10, y);
-    y += 7;
-    selectedUnits.forEach((u) => {
-      doc.text(
-        `${u.name} ×${u.count} (${u.pointsPerUnit || u.points} ${t(
-          "pointsShortMinus"
-        )})`,
-        12,
-        y
-      );
-      y += 6;
-
-      // Regole speciali dell'unità, se matchate
-      const unitRules = u.rules
-        ?.map((ruleName) =>
-          faction?.unitRules?.find((r) => r.name === ruleName)
-        )
-        .filter(Boolean);
-      unitRules?.forEach((r) => {
-        doc.setFontSize(10);
-        doc.setTextColor(80);
-        doc.text(`› ${r?.name}: ${r?.rule}`, 14, y);
-        y += 5;
-        doc.setFontSize(12);
-        doc.setTextColor(0);
-      });
-    });
-
-    // ⚠️ Violazioni
-    const violations = validateDynamic();
-    if (violations.length > 0) {
-      y += 6;
-      doc.setTextColor(200, 0, 0);
-      doc.text(t("pdfViolation"), 10, y);
-      y += 6;
-      violations.forEach((v) => {
-        doc.text(`• ${v}`, 12, y);
-        y += 6;
-      });
-      doc.setTextColor(0, 0, 0);
-    }
-
-    // Salva PDF
-    doc.save(`${armyName || "army-list"}.pdf`);
   };
 
   if (mode === "start") {
@@ -422,39 +327,43 @@ export default function ArmyCreator() {
           {t("backToMenu")}
         </button>
 
-        <ArmyHeader
-          armyName={armyName}
-          setArmyName={setArmyName}
-          game={game}
-          setGame={(val) => {
-            setGame(val);
-            setFaction(null);
-            setSelectedUnits([]);
-            setSelectedArmyId(null);
-          }}
-          games={allGames}
-          savedArmies={
-            mode !== "create"
-              ? savedArmies.filter((a) => game && a.gameId === game.id)
-              : []
-          }
-          onSelectArmy={handleLoadArmy}
-        />
+        <div className="w-full max-w-6xl flex flex-col lg:flex-row gap-4 items-start lg:items-center">
+          {/* Nome armata */}
+          <div className="w-full lg:w-1/3">
+            <ArmyNameInput armyName={armyName} setArmyName={setArmyName} />
+          </div>
 
-        {game && (
-          <FactionSelector
-            faction={faction}
-            setFaction={(val) => {
-              setFaction(val);
-              setSelectedUnits([]);
-              setSelectedUnitIndex(null);
-            }}
-            factions={game.factions || []}
-          />
-        )}
+          {/* Selettore gioco */}
+          <div className="w-full lg:w-1/3">
+            <ArmyGameSelector
+              game={game}
+              setGame={(val) => {
+                setGame(val);
+                setFaction(null);
+                setSelectedUnits([]);
+                setSelectedArmyId(null);
+              }}
+              games={allGames}
+            />
+          </div>
 
-        {faction && <FactionInfoBox faction={faction} />}
+          {/* Selettore fazione */}
+          {game && (
+            <div className="w-full lg:w-1/3">
+              <FactionSelector
+                faction={faction}
+                setFaction={(val) => {
+                  setFaction(val);
+                  setSelectedUnits([]);
+                  setSelectedUnitIndex(null);
+                }}
+                factions={game.factions || []}
+              />
+            </div>
+          )}
+        </div>
 
+        {/* Lista armate già salvate */}
         <ArmyHeaderSavedArmies
           game={game}
           faction={faction}
@@ -464,48 +373,65 @@ export default function ArmyCreator() {
           mode={mode}
         />
 
-        <div className="w-full max-w-5xl flex flex-col md:flex-row gap-8 mt-6">
-          <div className="flex-1">
+        {/* Box centrale */}
+        <div className="w-full flex flex-col lg:flex-row gap-6 mt-6">
+          {/* Colonna sinistra: Riassunto fazione esercito */}
+          <div className="w-full lg:w-3/5">
+            {faction && <FactionInfoBox faction={faction} />}
+          </div>
+
+          {/* Colonna destra: Sidebar esercito */}
+          <div className="w-full lg:w-2/5 h-full flex items-start lg:items-center justify-center">
+            <ArmySidebar
+              selectedUnits={selectedUnits}
+              totalCount={totalCount()}
+              totalPoints={totalPoints()}
+              thresholdStep={thresholdStep}
+              multiplier={multiplier}
+              basicValid={validateBasic()}
+              dynamicValid={validateDynamic().length === 0}
+              violations={validateDynamic()}
+              minUnits={faction?.constraints?.minUnits}
+              selectedArmyId={selectedArmyId}
+              onChangeCount={handleChangeCount}
+              onExport={handleExportPdf}
+              onSave={handleSaveArmy}
+              onDelete={handleDeleteArmy}
+              isSaveDisabled={
+                !armyName ||
+                selectedUnits.length === 0 ||
+                !validateBasic() ||
+                validateDynamic().length > 0
+              }
+            />
+          </div>
+        </div>
+
+        {/* 🔽 Riga in basso: Unità selezionabili + Dettaglio */}
+        <div className="w-full flex flex-col md:flex-row gap-8 mt-6">
+          {/* Colonna sinistra: UnitTable */}
+          <div className="w-full md:w-3/5">
             {faction && (
-              <>
-                <UnitTable
-                  units={units}
-                  selectedIndex={selectedUnitIndex}
-                  onSelect={setSelectedUnitIndex}
-                  onAdd={(u) => handleAddUnit(u as AddableUnit)}
-                />
-                <UnitDetails
-                  unit={
-                    selectedUnitIndex !== null ? units[selectedUnitIndex] : null
-                  }
-                  faction={faction}
-                />
-              </>
+              <UnitTable
+                units={units}
+                selectedIndex={selectedUnitIndex}
+                onSelect={setSelectedUnitIndex}
+                onAdd={(u) => handleAddUnit(u as AddableUnit)}
+              />
             )}
           </div>
 
-          <ArmySidebar
-            selectedUnits={selectedUnits}
-            totalCount={totalCount()}
-            totalPoints={totalPoints()}
-            thresholdStep={thresholdStep}
-            multiplier={multiplier}
-            basicValid={validateBasic()}
-            dynamicValid={validateDynamic().length === 0}
-            violations={validateDynamic()}
-            minUnits={faction?.constraints?.minUnits}
-            selectedArmyId={selectedArmyId}
-            onChangeCount={handleChangeCount}
-            onExport={exportPdf}
-            onSave={handleSaveArmy}
-            onDelete={handleDeleteArmy}
-            isSaveDisabled={
-              !armyName ||
-              selectedUnits.length === 0 ||
-              !validateBasic() ||
-              validateDynamic().length > 0
-            }
-          />
+          {/* Colonna destra: Dettagli unità */}
+          <div className="w-full md:w-2/5">
+            {faction && (
+              <UnitDetails
+                unit={
+                  selectedUnitIndex !== null ? units[selectedUnitIndex] : null
+                }
+                faction={faction}
+              />
+            )}
+          </div>
         </div>
       </main>
     </div>

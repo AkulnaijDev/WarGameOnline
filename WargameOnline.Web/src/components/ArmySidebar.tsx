@@ -39,7 +39,7 @@ export default function ArmySidebar({
   const { t } = useTranslation();
 
   return (
-    <div className="w-full md:w-80 bg-slate-800 p-4 rounded border border-slate-700 space-y-4">
+    <div className="w-full h-full bg-slate-800 p-4 rounded border border-slate-700 space-y-4">
       <h2 className="text-lg font-semibold">{t("yourArmyText")}</h2>
 
       {selectedUnits.length === 0 ? (
