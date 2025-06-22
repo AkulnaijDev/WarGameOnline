@@ -118,6 +118,7 @@
             "name": "empiriniGenericRules1", "rule": "This faction has special rule!"
           }
         ],
+        "image": "empirini.jpg",
         "unitRules": [
           {
             "name": "empiriniRules1", "rule": "This unit has special rule!"

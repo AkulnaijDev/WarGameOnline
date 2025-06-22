@@ -16,6 +16,7 @@ export type Faction = {
   id: number;
   name: string;
   displayName?: string;
+  image?: string;
   units: Unit[];
   constraints?: {
     maxPoints?: number;
@@ -24,7 +25,23 @@ export type Faction = {
   constraintsByThreshold?: {
     step: number;
   };
+  armyRules?: Rule[];
+  unitRules?: Rule[];
+  armySpells?: ArmySpell[];
   gameId?: number;
+};
+
+export type Rule = {
+  name: string;
+  rule: string;
+};
+
+export type ArmySpell = {
+  name: string;
+  effect: string;
+  rangeInCm: number;
+  difficultyToCast: number;
+  flavourText?: string;
 };
 
 export type ThresholdConstraints = {
@@ -34,13 +51,25 @@ export type ThresholdConstraints = {
   maxFixed?: number;
 };
 
+export type Attack = {
+  [key: string]: number; // es: { melee: 3 }, { ranged: 1 }, { breath: 2 }
+};
+
 export type Unit = {
   id: number;
   name: string;
-  points: number;
-  stats?: Record<string, number>;
+  points?: number; // legacy support
+  pointsPerUnit?: number;
+  unitSize?: number;
+  type?: string;
+  attacks?: Attack[];
+  hits?: number;
+  armour?: number;
+  command?: number;
+  stats?: Record<string, number>; // legacy support
   description?: string;
   rules?: string[];
+  imagine?: string;
   thresholdConstraints?: ThresholdConstraints;
   factionId?: number;
   gameId?: number;

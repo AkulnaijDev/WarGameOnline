@@ -6,6 +6,7 @@ import ArmyHeader from "../components/ArmyHeader";
 import ArmyHeaderSavedArmies from "../components/ArmyHeaderSavedArmies";
 import ArmySidebar from "../components/ArmySidebar";
 import FactionSelector from "../components/FactionSelector";
+import FactionInfoBox from "../components/FactionInfoBox";
 import UnitTable from "../components/UnitTable";
 import UnitDetails from "../components/UnitDetails";
 import {
@@ -66,8 +67,12 @@ export default function ArmyCreator() {
     thresholdStep > 0 ? Math.floor(totalPoints() / thresholdStep) + 1 : 1;
 
   function totalPoints() {
-    return selectedUnits.reduce((sum, u) => sum + u.points * u.count, 0);
-  }
+  return selectedUnits.reduce(
+    (sum, u) => sum + (u.pointsPerUnit ?? u.points ?? 0) * u.count,
+    0
+  );
+}
+
 
   function totalCount() {
     return selectedUnits.reduce((sum, u) => sum + u.count, 0);
@@ -245,26 +250,98 @@ export default function ArmyCreator() {
 
   const exportPdf = () => {
     const doc = new jsPDF();
+
+    // Titolo armata
     doc.setFontSize(16);
     doc.text(`${t("pdfArmy")} ${armyName || t("pdfUnnamed")}`, 10, 20);
+
     doc.setFontSize(12);
     doc.text(`${t("pdfGame")} ${game?.name || "-"}`, 10, 30);
-    doc.text(`${t("pdfFaction")} ${faction?.name || "-"}`, 10, 37);
+    doc.text(
+      `${t("pdfFaction")} ${faction?.displayName || faction?.name || "-"}`,
+      10,
+      37
+    );
     doc.text(`${t("pdfPoints")} ${totalPoints()}`, 10, 44);
     doc.text(`${t("pdfUnits")} ${totalCount()}`, 10, 51);
-    doc.text(t("pdfUnitsSelected"), 10, 65);
-    let y = 72;
+
+    let y = 60;
+
+    // Immagine fazione (solo se presente — richiede plugin image support!)
+    if (faction?.image) {
+      const img = new Image();
+      img.src = `/assets/factions/${faction.image}`;
+      doc.addImage(img, "JPEG", 150, 15, 40, 40);
+    }
+
+    // 🛡️ Regole speciali della fazione
+    if (faction?.armyRules?.length) {
+      doc.setFontSize(12);
+      doc.text("🛡️ Regole della fazione:", 10, y);
+      y += 6;
+      faction.armyRules.forEach((r) => {
+        doc.text(`• ${r.name}: ${r.rule}`, 12, y);
+        y += 6;
+      });
+      y += 4;
+    }
+
+    // ✨ Incantesimi (se presenti)
+    if (faction?.armySpells?.length) {
+      doc.text("✨ Incantesimi disponibili:", 10, y);
+      y += 6;
+      faction.armySpells.forEach((s) => {
+        doc.text(
+          `• ${s.name} — ${s.effect} (Range: ${s.rangeInCm}cm | Diff: ${s.difficultyToCast})`,
+          12,
+          y
+        );
+        y += 6;
+        if (s.flavourText) {
+          doc.setFontSize(10);
+          doc.setTextColor(120);
+          doc.text(`“${s.flavourText}”`, 14, y);
+          y += 5;
+          doc.setFontSize(12);
+          doc.setTextColor(0);
+        }
+      });
+      y += 4;
+    }
+
+    // ⚔️ Unità selezionate
+    doc.text(t("pdfUnitsSelected"), 10, y);
+    y += 7;
     selectedUnits.forEach((u) => {
       doc.text(
-        `${u.name} ×${u.count} (${u.points} ${t("pointsShortMinus")})`,
+        `${u.name} ×${u.count} (${u.pointsPerUnit || u.points} ${t(
+          "pointsShortMinus"
+        )})`,
         12,
         y
       );
-      y += 7;
+      y += 6;
+
+      // Regole speciali dell'unità, se matchate
+      const unitRules = u.rules
+        ?.map((ruleName) =>
+          faction?.unitRules?.find((r) => r.name === ruleName)
+        )
+        .filter(Boolean);
+      unitRules?.forEach((r) => {
+        doc.setFontSize(10);
+        doc.setTextColor(80);
+        doc.text(`› ${r?.name}: ${r?.rule}`, 14, y);
+        y += 5;
+        doc.setFontSize(12);
+        doc.setTextColor(0);
+      });
     });
+
+    // ⚠️ Violazioni
     const violations = validateDynamic();
     if (violations.length > 0) {
-      y += 5;
+      y += 6;
       doc.setTextColor(200, 0, 0);
       doc.text(t("pdfViolation"), 10, y);
       y += 6;
@@ -274,6 +351,8 @@ export default function ArmyCreator() {
       });
       doc.setTextColor(0, 0, 0);
     }
+
+    // Salva PDF
     doc.save(`${armyName || "army-list"}.pdf`);
   };
 
@@ -374,6 +453,8 @@ export default function ArmyCreator() {
           />
         )}
 
+        {faction && <FactionInfoBox faction={faction} />}
+
         <ArmyHeaderSavedArmies
           game={game}
           faction={faction}
@@ -397,6 +478,7 @@ export default function ArmyCreator() {
                   unit={
                     selectedUnitIndex !== null ? units[selectedUnitIndex] : null
                   }
+                  faction={faction}
                 />
               </>
             )}
