@@ -25,6 +25,7 @@ import {
   Mode,
   AddableUnit,
 } from "../types/types";
+import { useTranslation } from "react-i18next";
 
 export default function ArmyCreator() {
   const [mode, setMode] = useState<Mode>("start");
@@ -38,7 +39,7 @@ export default function ArmyCreator() {
   );
   const [savedArmies, setSavedArmies] = useState<ArmySummary[]>([]);
   const [selectedArmyId, setSelectedArmyId] = useState<number | null>(null);
-
+ const { t } = useTranslation();
   const { token } = useAuth();
 
   useEffect(() => {
@@ -83,13 +84,11 @@ export default function ArmyCreator() {
   function validateDynamic(): string[] {
     const violations: string[] = [];
 
-    // Crea una mappa unità selezionate per ID
     const selectedById = new Map<number, UnitWithCount>();
     for (const u of selectedUnits) {
       selectedById.set(u.id, u);
     }
 
-    // Ricava tutte le unità disponibili nella fazione
     const allUnits: Unit[] = faction?.units || [];
 
     for (const unit of allUnits) {
@@ -109,10 +108,10 @@ export default function ArmyCreator() {
           : constraints.maxFixed;
 
       if (min !== undefined && count < min) {
-        violations.push(`${unit.name}: at least ${min}`);
+        violations.push(`${unit.name}: ${t("atLeastText")} ${min}`);
       }
       if (max !== undefined && count > max) {
-        violations.push(`${unit.name}: at most ${max}`);
+        violations.push(`${unit.name}: ${t("atMostText")} ${max}`);
       }
     }
 
@@ -146,7 +145,7 @@ export default function ArmyCreator() {
         .filter((x): x is UnitWithCount => x !== null);
 
       if (!selectedGame || !selectedFaction)
-        throw new Error("Game or Faction not found");
+        throw new Error(t("gameOrFactionNotFound"));
 
       setSelectedArmyId(data.id);
       setArmyName(data.name);
@@ -155,7 +154,7 @@ export default function ArmyCreator() {
       setSelectedUnits(enrichedUnits);
       setMode("edit");
     } catch (err) {
-      console.error("Errore nel caricamento armata:", err);
+      console.error(t("errorLoadingArmyList"), err);
     }
   };
 
@@ -177,7 +176,7 @@ export default function ArmyCreator() {
       units: selectedUnits.map((u) => ({
         unitId: u.id,
         gameId: game.id,
-        factionId: u.factionId, // 👈 fazione specifica dell’unità
+        factionId: u.factionId,
         count: u.count,
       })),
     };
@@ -187,15 +186,13 @@ export default function ArmyCreator() {
         { ...payload, id: selectedArmyId ?? undefined },
         token
       );
-      // Aggiorna lo stato locale
       setSelectedArmyId(response.id);
       setMode("edit");
 
-      // 👇 Reload delle armate salvate
       const updatedArmies = await fetchArmies(token);
       setSavedArmies(updatedArmies);
     } catch (err) {
-      console.error("Errore salvataggio armata:", err);
+      console.error(t("errorSavingArmy"), err);
     }
   };
 
@@ -210,7 +207,7 @@ export default function ArmyCreator() {
       const updatedArmies = await fetchArmies(token);
       setSavedArmies(updatedArmies);
     } catch (err) {
-      console.error("Errore eliminazione armata:", err);
+      console.error(t("errorDeletingArmy"), err);
     }
   };
 
@@ -226,18 +223,16 @@ export default function ArmyCreator() {
     const idx = selectedUnits.findIndex((x) => x.id === u.id);
 
     if (idx !== -1) {
-      // Se l'unità è già presente, aumentiamo il conteggio
       const updated = [...selectedUnits];
       updated[idx].count += 1;
       setSelectedUnits(updated);
     } else {
-      // Se è nuova, aggiungiamola con factionId esplicito
       setSelectedUnits([
         ...selectedUnits,
         {
           ...u,
           count: 1,
-          factionId: u.factionId, // ← garantito perché AddableUnit lo richiede
+          factionId: u.factionId,
         },
       ]);
     }
@@ -246,23 +241,23 @@ export default function ArmyCreator() {
   const exportPdf = () => {
     const doc = new jsPDF();
     doc.setFontSize(16);
-    doc.text(`Army: ${armyName || "Unnamed"}`, 10, 20);
+    doc.text(`${t('pdfArmy')} ${armyName || t('pdfUnnamed')}`, 10, 20);
     doc.setFontSize(12);
-    doc.text(`Game: ${game?.name || "-"}`, 10, 30);
-    doc.text(`Faction: ${faction?.name || "-"}`, 10, 37);
-    doc.text(`Points: ${totalPoints()}`, 10, 44);
-    doc.text(`Units: ${totalCount()}`, 10, 51);
-    doc.text("Units selected:", 10, 65);
+    doc.text(`${t('pdfGame')} ${game?.name || "-"}`, 10, 30);
+    doc.text(`${t('pdfFaction')} ${faction?.name || "-"}`, 10, 37);
+    doc.text(`${t('pdfPoints')} ${totalPoints()}`, 10, 44);
+    doc.text(`${t('pdfUnits')} ${totalCount()}`, 10, 51);
+    doc.text(t('pdfUnitsSelected'), 10, 65);
     let y = 72;
     selectedUnits.forEach((u) => {
-      doc.text(`${u.name} ×${u.count} (${u.points} pts)`, 12, y);
+      doc.text(`${u.name} ×${u.count} (${u.points} ${t('pointsShortMinus')})`, 12, y);
       y += 7;
     });
     const violations = validateDynamic();
     if (violations.length > 0) {
       y += 5;
       doc.setTextColor(200, 0, 0);
-      doc.text("⚠ Violations:", 10, y);
+      doc.text(t('pdfViolation'), 10, y);
       y += 6;
       violations.forEach((v) => {
         doc.text(`• ${v}`, 12, y);
@@ -299,12 +294,12 @@ export default function ArmyCreator() {
           <button
             onClick={() => {
               setMode("start");
-              setSelectedArmyId(null); // 👈 questo resetta lo stato per tornare alla selezione
-              setGame(null); // 👈 reset
+              setSelectedArmyId(null);
+              setGame(null);
             }}
             className="self-start mb-4 text-sm text-slate-400 hover:underline"
           >
-            ← Torna al menu
+            {t('backToMenu')}
           </button>
 
           <ArmyHeaderSavedArmies
@@ -316,8 +311,7 @@ export default function ArmyCreator() {
           />
 
           <div className="bg-yellow-700 text-white p-4 rounded mt-6 max-w-xl">
-            ⚠ Nessuna lista selezionata. Scegli una lista da modificare oppure
-            torna indietro.
+            {t('noSelectedListAlert')}
           </div>
         </main>
       </div>
@@ -331,12 +325,12 @@ export default function ArmyCreator() {
         <button
           onClick={() => {
             setMode("start");
-            setSelectedArmyId(null); // 👈 questo resetta lo stato per tornare alla selezione
-            setGame(null); // 👈 reset
+            setSelectedArmyId(null);
+            setGame(null); 
           }}
           className="self-start mb-4 text-sm text-slate-400 hover:underline"
         >
-          ← Torna al menu
+           {t('backToMenu')}
         </button>
 
         <ArmyHeader

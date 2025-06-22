@@ -1,5 +1,5 @@
-import { Game, ArmySummary, Army, Mode } from '../types/types'
-import { useState } from 'react'
+import { Game, ArmySummary, Army } from '../types/types'
+import { useTranslation } from "react-i18next";
 
 type Props = {
   armyName: string
@@ -18,12 +18,12 @@ export default function ArmyHeader({
   setGame,
   games
 }: Props) {
-
+  const { t } = useTranslation();
   return (
     <div className="w-full max-w-2xl mb-3 space-y-3">
       <input
         className="p-2 text-black rounded w-full"
-        placeholder="Name your army..."
+        placeholder={t('nameYourArmy')}
         value={armyName}
         onChange={e => setArmyName(e.target.value)}
       />
@@ -36,7 +36,7 @@ export default function ArmyHeader({
         }}
         className="w-full p-2 bg-slate-800 text-white rounded"
       >
-        <option value="">-- Select Game --</option>
+        <option value="">{t('selectGame')}</option>
         {games.map(g => (
           <option key={g.id} value={g.id}>
             {g.name}

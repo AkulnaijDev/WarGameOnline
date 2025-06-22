@@ -3,8 +3,6 @@ import { resetSocket } from '../hooks/useSocket'
 import { API } from '../lib/api'
 import { useTranslation } from "react-i18next";
 
-
-
 type AuthContextType = {
   token: string | null
   setToken: (t: string | null) => void

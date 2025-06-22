@@ -1,4 +1,5 @@
 import { Game, ArmySummary, Army, Mode } from '../types/types'
+import { useTranslation } from "react-i18next";
 
 type Props = {
   game: Game | null
@@ -15,6 +16,9 @@ export default function ArmyHeaderSavedArmies({
   onSelectArmy,
   mode
 }: Props) {
+
+  const { t } = useTranslation();
+
   const visibleArmies = game
     ? savedArmies.filter((a) => a.gameId === game.id)
     : savedArmies
@@ -31,7 +35,7 @@ export default function ArmyHeaderSavedArmies({
           className="w-full p-2 bg-slate-800 text-white rounded mt-2"
         >
           {!selectedArmyId && (
-            <option value="">-- Carica una lista salvata --</option>
+            <option value="">{t('loadSavedList')}</option>
           )}
 
           {visibleArmies.map((a) => (
