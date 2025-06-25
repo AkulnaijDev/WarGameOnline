@@ -26,13 +26,21 @@ import {
   ArmySummary,
   Mode,
   AddableUnit,
+  GameSystem,
+  GenericGameRule
 } from "../types/types";
 import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
 export default function ArmyCreator() {
+
+  const [rawData, setRawData] = useState<any[]>([]);
+const [gameSystems, setGameSystems] = useState<GameSystem[]>([]);
+const [genericGameRules, setGenericGameRules] = useState<GenericGameRule[]>([]);
+const [game, setGame] = useState<GameSystem | null>(null);
+
+
   const [mode, setMode] = useState<Mode>("start");
-  const [rawData, setRawData] = useState<any>({});
-  const [game, setGame] = useState<Game | null>(null);
+
   const [faction, setFaction] = useState<Faction | null>(null);
   const [armyName, setArmyName] = useState("");
   const [selectedUnits, setSelectedUnits] = useState<UnitWithCount[]>([]);
@@ -45,18 +53,30 @@ export default function ArmyCreator() {
   const { token } = useAuth();
 
   useEffect(() => {
-    fetch("/data/games.json")
-      .then((res) => res.json())
-      .then(setRawData)
-      .catch(console.error);
-  }, []);
+  fetch("/data/games.json")
+    .then((res) => res.json())
+    .then((data) => {
+      setRawData(data);
+
+     const gameSystemsEntry = data.find((el: any) => typeof el === "object" && "gameSystems" in el);
+const genericRulesEntry = data.find((el: any) => typeof el === "object" && "genericGameRules" in el);
+
+
+      setGameSystems(gameSystemsEntry?.gameSystems || []);
+      setGenericGameRules(genericRulesEntry?.genericGameRules || []);
+    })
+    .catch(console.error);
+}, []);
+
+
 
   useEffect(() => {
     if (!token) return;
     fetchArmies(token).then(setSavedArmies).catch(console.error);
   }, [token]);
 
-  const allGames: Game[] = Object.values(rawData) as Game[];
+  const allGames = gameSystems;
+
   const units: Unit[] = faction?.units || [];
 
   const selectedFactionRules = faction?.constraintsByThreshold ?? {
@@ -68,23 +88,37 @@ export default function ArmyCreator() {
     thresholdStep > 0 ? Math.floor(totalPoints() / thresholdStep) + 1 : 1;
 
   function totalPoints() {
-    return selectedUnits.reduce(
-      (sum, u) => sum + (u.pointsPerUnit ?? u.points ?? 0) * u.count,
-      0
-    );
-  }
+  return selectedUnits.reduce((sum, u) => {
+  const points = (u.pointsPerUnit ?? u.points ?? 0);
+
+    return sum + points * u.count;
+  }, 0);
+}
+
 
   function totalCount() {
     return selectedUnits.reduce((sum, u) => sum + u.count, 0);
   }
 
   function validateBasic() {
-    const c = faction?.constraints;
-    return (
-      (!c?.maxPoints || totalPoints() <= c.maxPoints) &&
-      (!c?.minUnits || totalCount() >= c.minUnits)
-    );
-  }
+  const constraints =
+    ("minUnits" in (faction?.constraintsByThreshold || {})) ||
+    ("maxPoints" in (faction?.constraintsByThreshold || {}))
+      ? (faction?.constraintsByThreshold as { minUnits?: number; maxPoints?: number })
+      : faction?.constraints ?? {};
+
+  const { maxPoints, minUnits } = constraints || {};
+
+  return (
+    (!maxPoints || totalPoints() <= maxPoints) &&
+    (!minUnits || totalCount() >= minUnits)
+  );
+}
+
+
+
+
+
 
   function validateDynamic(): string[] {
     const violations: string[] = [];
@@ -119,6 +153,11 @@ export default function ArmyCreator() {
         violations.push(`${unit.name}: ${t("atMostText")} ${max}`);
       }
     }
+
+     // 👉 Nuovo vincolo: nome esercito obbligatorio
+  if (!armyName?.trim()) {
+    violations.push(t("insertNameForYourList"));
+  }
 
     return violations;
   }
@@ -242,7 +281,6 @@ export default function ArmyCreator() {
         {
           ...u,
           count: 1,
-          factionId: u.factionId,
         },
       ]);
     }
@@ -391,7 +429,10 @@ export default function ArmyCreator() {
               basicValid={validateBasic()}
               dynamicValid={validateDynamic().length === 0}
               violations={validateDynamic()}
-              minUnits={faction?.constraints?.minUnits}
+               minUnits={
+    faction?.constraintsByThreshold?.step ??
+    faction?.constraints?.minUnits
+  }
               selectedArmyId={selectedArmyId}
               onChangeCount={handleChangeCount}
               onExport={handleExportPdf}

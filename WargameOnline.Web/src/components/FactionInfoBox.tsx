@@ -25,13 +25,13 @@ export default function FactionInfoBox({ faction }: Props) {
 
       <div className="flex flex-col lg:flex-row gap-6 mt-4">
         {/* Regole speciali */}
-        {faction.armyRules && faction.armyRules.length > 0 && (
+        {faction.armyRules && faction.armyRules.length > 0 && faction.armyRules[0].rules.length > 0 && (
           <div>
             <h3 className="text-xl font-semibold mb-2">🛡️ Regole speciali</h3>
             <ul className="list-disc list-inside space-y-1">
               {faction.armyRules.map((rule) => (
                 <li key={rule.name}>
-                  <strong>{rule.name}</strong>: {rule.rule}
+                  <strong>{rule.name}</strong>: {rule.ruleDescription}
                 </li>
               ))}
             </ul>

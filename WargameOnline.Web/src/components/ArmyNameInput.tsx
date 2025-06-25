@@ -11,7 +11,7 @@ export default function ArmyNameInput({
 }: Props) {
   const { t } = useTranslation();
   return (
-    <div className="w-full max-w-2xl mb-3 space-y-3">
+    <div className="w-full max-w-2xl space-y-3">
       <input
         className="p-2 text-black rounded w-full"
         placeholder={t('nameYourArmy')}

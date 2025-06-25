@@ -12,37 +12,12 @@ export type Game = {
   factions: Faction[];
 };
 
-export type Faction = {
-  id: number;
-  name: string;
-  displayName?: string;
-  image?: string;
-  units: Unit[];
-  constraints?: {
-    maxPoints?: number;
-    minUnits?: number;
-  };
-  constraintsByThreshold?: {
-    step: number;
-  };
-  armyRules?: Rule[];
-  unitRules?: Rule[];
-  armySpells?: ArmySpell[];
-  gameId?: number;
-};
 
 export type Rule = {
   name: string;
   rule: string;
 };
 
-export type ArmySpell = {
-  name: string;
-  effect: string;
-  rangeInCm: number;
-  difficultyToCast: number;
-  flavourText?: string;
-};
 
 export type ThresholdConstraints = {
   min?: number;
@@ -55,30 +30,9 @@ export type Attack = {
   [key: string]: number; // es: { melee: 3 }, { ranged: 1 }, { breath: 2 }
 };
 
-export type Unit = {
-  id: number;
-  name: string;
-  points?: number; // legacy support
-  pointsPerUnit?: number;
-  unitSize?: number;
-  type?: string;
-  attacks?: Attack[];
-  hits?: number;
-  armour?: number;
-  command?: number;
-  stats?: Record<string, number>; // legacy support
-  description?: string;
-  rules?: string[];
-  imagine?: string;
-  thresholdConstraints?: ThresholdConstraints;
-  factionId?: number;
-  gameId?: number;
-};
 
-export type UnitWithCount = Unit & {
-  count: number;
-  factionId: number;
-};
+
+export type UnitWithCount = Unit & { count: number; points?: number, factionId: number;};
 
 export type AddableUnit = Unit & { factionId: number };
 
@@ -107,4 +61,82 @@ export type ArmySummary = {
 
 export type Army = ArmySummary & {
   units: ArmyInput["units"];
+};
+
+
+export type RuleParam = {
+  variable: string;
+  value?: any;
+  amount?: number;
+};
+
+export type UnitRule = {
+  id: string;
+  name: string;
+  gameRules: {
+    gameRuleId: string | number;
+    params: RuleParam[];
+  }[];
+};
+
+export type GenericGameRule = {
+  id: string | number;
+  name: string;
+  effect?: string;
+  type?: string;
+  value?: any;
+  target?: string;
+  conditions?: string[];
+  [key: string]: any;
+};
+
+export type Unit = {
+  id: number;
+  name: string;
+  type: string;
+  attacks: any[];
+  hits: number;
+  armour: number;
+  command: number;
+  unitSize: number;
+  pointsPerUnit: number;
+  thresholdConstraints: Record<string, number>;
+  rules: string[];
+  description: string;
+  imagine: string;
+};
+
+export type ArmySpell = {
+  name: string;
+  effect: string;
+  rangeInCm: number;
+  difficultyToCast: number;
+  flavourText?: string;
+  gameRules?: any[];
+};
+
+export type ArmyRule = {
+  name: string;
+  ruleDescription: string;
+  rules: string[];
+};
+
+export type Faction = {
+  id: number;
+  name: string;
+  displayName: string;
+  description: string;
+  image: string;
+  constraintsByThreshold?: { step: number };
+   constraints?: { minUnits?: number; maxPoints?: number };
+  armyRules: ArmyRule[];
+  armySpells: ArmySpell[];
+  units: Unit[];
+  unitRules: UnitRule[];
+};
+
+export type GameSystem = {
+  id: number;
+  name: string;
+  factions: Faction[];
 };

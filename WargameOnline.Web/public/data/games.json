@@ -101,7 +101,7 @@
                 "unitSize": 3,
                 "pointsPerUnit": 65,
                 "thresholdConstraints": { "max": 3 },
-                "rules": ["genericRulesId_1"],
+                "rules": ["unitRulesId_1"],
                 "description": "Tipi con handgun",
                 "imagine": "handgunners.jpg"
               },
@@ -116,7 +116,7 @@
                 "unitSize": 3,
                 "pointsPerUnit": 70,
                 "thresholdConstraints": { "max": 1 },
-                "rules": ["genericRulesId_2"],
+                "rules": ["unitRulesId_2"],
                 "description": "Tipi con flagello",
                 "imagine": "flagellants.jpg"
               },
@@ -131,7 +131,7 @@
                 "unitSize": 1,
                 "pointsPerUnit": 20,
                 "thresholdConstraints": {},
-                "rules": ["genericRulesId_3"],
+                "rules": ["unitRulesId_3"],
                 "description": "Tipi con Skirmishers",
                 "imagine": "skirmishers.jpg"
               },
@@ -161,7 +161,7 @@
                 "unitSize": 3,
                 "pointsPerUnit": 95,
                 "thresholdConstraints": { "max": 4 },
-                "rules": ["genericRulesId_4"],
+                "rules": ["unitRulesId_4"],
                 "description": "Tipi con Pistoliers",
                 "imagine": "pistoliers.jpg"
               },
@@ -181,7 +181,7 @@
                 "unitSize": 1,
                 "pointsPerUnit": 50,
                 "thresholdConstraints": { "max": 1 },
-                "rules": ["genericRulesId_5"],
+                "rules": ["unitRulesId_5"],
                 "description": "Tipi con Helblaster",
                 "imagine": "helblaster.jpg"
               },
@@ -211,7 +211,7 @@
                 "unitSize": 1,
                 "pointsPerUnit": 130,
                 "thresholdConstraints": { "max": 1 },
-                "rules": ["genericRulesId_6"],
+                "rules": ["unitRulesId_6"],
                 "description": "Tipi con Steam Tank",
                 "imagine": "steamTank.jpg"
               },
@@ -268,10 +268,10 @@
                 "hits": 0,
                 "armour": 0,
                 "command": 0,
-                "unitSize": 1,
+                "unitSize": 0,
                 "pointsPerUnit": 80,
                 "thresholdConstraints": { "max": 1 },
-                "rules": ["genericRulesId_7"],
+                "rules": ["unitRulesId_7"],
                 "description": "Tipi con Griffon",
                 "imagine": "griffon.jpg"
               },
@@ -283,17 +283,17 @@
                 "hits": 0,
                 "armour": 0,
                 "command": 0,
-                "unitSize": 1,
+                "unitSize": 0,
                 "pointsPerUnit": 15,
                 "thresholdConstraints": { "max": 1 },
-                "rules": ["genericRulesId_8"],
+                "rules": ["unitRulesId_8"],
                 "description": "Tipi con War Altar",
                 "imagine": "warAltar.jpg"
               }
             ],
             "unitRules": [
               {
-                "id": "genericRulesId_1",
+                "id": "unitRulesId_1",
                 "name": "Handgunners rule",
                 "gameRules": [
                   {
@@ -321,7 +321,7 @@
                 ]
               },
               {
-                "id": "genericRulesId_2",
+                "id": "unitRulesId_2",
                 "name": "Flagellants rule",
                 "gameRules": [
                   {
@@ -347,7 +347,7 @@
                 ]
               },
               {
-                "id": "genericRulesId_3",
+                "id": "unitRulesId_3",
                 "name": "Skirmishers rule",
                 "gameRules": [
                   {
@@ -361,7 +361,7 @@
                 ]
               },
               {
-                "id": "genericRulesId_4",
+                "id": "unitRulesId_4",
                 "name": "Pistoliers rule",
                 "gameRules": [
                   {
@@ -380,7 +380,7 @@
                 ]
               },
               {
-                "id": "genericRulesId_5",
+                "id": "unitRulesId_5",
                 "name": "Hellblaster rule",
                 "gameRules": [
                   {
@@ -404,7 +404,7 @@
                 ]
               },
               {
-                "id": "genericRulesId_6",
+                "id": "unitRulesId_6",
                 "name": "Steam Tank rule",
                 "gameRules": [
                   {
@@ -438,7 +438,7 @@
                 ]
               },
               {
-                "id": "genericRulesId_7",
+                "id": "unitRulesId_7",
                 "name": "Griffon rule",
                 "gameRules": [
                   {
@@ -452,7 +452,7 @@
                 ]
               },
               {
-                "id": "genericRulesId_8",
+                "id": "unitRulesId_8",
                 "name": "War Altar rule",
                 "gameRules": [
                   {

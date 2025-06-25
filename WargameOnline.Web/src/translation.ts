@@ -83,8 +83,15 @@ i18n.use(initReactI18next).init({
 
         //UnitTable
         nameShort: "Name",
-        pointsShort: "Pts",
-        propsShort: "Props",
+        type: "Type",
+        attacks: "Attacks",
+        hits: "Hits",
+        armour: "Armour",
+        command: "Command",
+        unitSize: "UnitSize",
+        pointsPerUnit: "Pts",
+        minMax: "Min/Max",
+        unitRules: "Rules",
         addShort: "Add",
 
         //AuthContext
@@ -127,6 +134,7 @@ i18n.use(initReactI18next).init({
           "⚠ No list selected. Choose a list to edit or go back to menu.",
         armySavedSuccessfully: "Army list saved successfully",
         armyDeletedSuccessfully: "Army list deleted successfully",
+        insertNameForYourList: "To save, insert a name for your list",
 
         //HomePage
         welcomeHome: "Welcome to your home page",
@@ -213,10 +221,18 @@ i18n.use(initReactI18next).init({
         rules: "Regole: ",
 
         //UnitTable
-        nameShort: "Name",
-        pointsShort: "Pti",
-        propsShort: "Props",
-        addShort: "Agg.",
+        nameShort: "Nome",
+        type: "Tipo",
+        attacks: "Attacchi",
+        hits: "Ferite",
+        armour: "Armatura",
+        command: "Comando",
+        unitSize: "Dim.Unità",
+        pointsPerUnit: "Pti",
+        minMax: "Min/Max",
+        unitRules: "Regole",
+        addShort: "Agg",
+
 
         //AuthContext
         loginFailed: "Login fallito",
@@ -260,6 +276,7 @@ i18n.use(initReactI18next).init({
           "⚠ Nessun elenco selezionato. Scegliere una lista da modificare o tornare al menu",
         armySavedSuccessfully: "Elenco di armate salvato con successo",
         armyDeletedSuccessfully: "Elenco di armate cancellato con successo",
+        insertNameForYourList: "Per salvare, inserire un nome per la lista",
 
         //HomePage
         welcomeHome: "Benvenuti nella vostra home page",
