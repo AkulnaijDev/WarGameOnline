@@ -1,170 +1,662 @@
 [
   {
-    "id": 1,
-    "name": "Warmaster",
-    "factions": [
+    "gameSystems": [
       {
         "id": 1,
-        "name": "goblinoide",
-        "displayName": "Gobelini",
-        "units": [
+        "name": "Warmaster",
+        "factions": [
           {
             "id": 1,
-            "name": "Schiavetto",
-            "points": 15,
-            "stats": { "attack": 1, "defense": 2 },
-            "rules": ["codardo"],
-            "description": "Un goblin armato di bastone. Serve come carne da macello."
-          },
-          {
-            "id": 2,
-            "name": "Ogro Ruttante",
-            "points": 60,
-            "stats": { "attack": 5, "defense": 4 },
-            "rules": ["furioso", "grande"],
-            "description": "Bestione robusto con un alito devastante."
-          },
-          {
-            "id": 3,
-            "name": "Generale Goblin",
-            "points": 90,
-            "stats": { "leadership": 4 },
-            "rules": ["stratega"],
-            "description": "Il capo delle truppe gobline.",
-            "thresholdConstraints": { "minFixed": 1, "maxFixed": 1 }
-          },
-          {
-            "id": 4,
-            "name": "Drago Verde",
-            "points": 200,
-            "stats": { "volo": true, "soffio": "fuoco" },
-            "rules": ["mostro", "volante"],
-            "description": "Una creatura devastante dalle montagne nebbiose.",
-            "thresholdConstraints": { "max": 2 }
-          },
-          {
-            "id": 5,
-            "name": "Scudiere",
-            "points": 30,
-            "stats": { "difesa": 3 },
-            "description": "Fanteria di supporto, dotata di scudo e speranza.",
-            "thresholdConstraints": { "min": 3 }
+            "name": "Empire",
+            "displayName": "Empire",
+            "description": "The armies of The Empire are raised and controlled by its separate states. The Emperor‘s army is nothing more than the army of the Reikland - although as the Reikland is the richest and most populous part of the Empire it also has by far the largest and best equipped army.",
+            "image": "1.jpg",
+            "constraintsByThreshold": {
+              "step": 1000
+            },
+            "armyRules": [
+              {
+                "id": "armyRulesId_1",
+                "ruleDescription": "This faction has special rule!",
+                "rules": []
+              }
+            ],
+            "armySpells": [
+              {
+                "id":1,
+                "name": "Ball of flame",
+                "effect": "Effect of magic",
+                "gameRules": [],
+                "rangeInCm": 30,
+                "difficultyToCast": 5,
+                "flavourText": "A ball of flame shoots form the Wizard‘s outstretched arm burning all in its path."
+              },
+              {
+                "id":2,
+                "name": "Weird Enchantment",
+                "effect": "Effect of magic",
+                "gameRules": [],
+                "rangeInCm": 30,
+                "difficultyToCast": 4,
+                "flavourText": "A weird enchantment forms around the target unit and engulfs it in strange lights, scary nightmares and disorientating special effects."
+              },
+              {
+                "id":3,
+                "name": "Voice of Command",
+                "effect": "Effect of magic",
+                "gameRules": [],
+                "rangeInCm": 30,
+                "difficultyToCast": 5,
+                "flavourText": "The Wizard‘s voice booms out across the battlefield directing troops above the tumult of combat with the magical Voice of Command."
+              },
+              {
+                "id":4,
+                "name": "Teleport",
+                "effect": "Effect of magic",
+                "gameRules": [],
+                "rangeInCm": 999,
+                "difficultyToCast": 2,
+                "flavourText": "With a swirl of his cloak, a crack of thunder and just a hint of maniacal laughter the Wizard vanishes to reappear anywhere on the battlefield."
+              }
+            ],
+            "units": [
+              {
+                "id": 1,
+                "name": "Halberdiers",
+                "type": "Infantry",
+                "attacks": [{ "melee": 3 }],
+                "hits": 3,
+                "armour": 6,
+                "command": 0,
+                "unitSize": 3,
+                "pointsPerUnit": 45,
+                "thresholdConstraints": { "min": 2 },
+                "rules": [],
+                "description": "Tipi con alabarda",
+                "imagine": "halberdiers.jpg"
+              },
+              {
+                "id": 2,
+                "name": "Crossbowmen",
+                "type": "Infantry",
+                "attacks": [{ "melee": 3 }, { "ranged": 1 }],
+                "hits": 3,
+                "armour": 0,
+                "command": 0,
+                "unitSize": 3,
+                "pointsPerUnit": 55,
+                "thresholdConstraints": { "min": 2 },
+                "rules": [],
+                "description": "Tipi con balestra",
+                "imagine": "crossbowmen.jpg"
+              },
+              {
+                "id": 3,
+                "name": "Handgunners",
+                "type": "Infantry",
+                "attacks": [{ "melee": 3 }, { "ranged": 1 }],
+                "hits": 3,
+                "armour": 0,
+                "command": 0,
+                "unitSize": 3,
+                "pointsPerUnit": 65,
+                "thresholdConstraints": { "max": 3 },
+                "rules": ["genericRulesId_1"],
+                "description": "Tipi con handgun",
+                "imagine": "handgunners.jpg"
+              },
+              {
+                "id": 4,
+                "name": "Flagellants",
+                "type": "Infantry",
+                "attacks": [{ "melee": 5 }],
+                "hits": 3,
+                "armour": 0,
+                "command": 0,
+                "unitSize": 3,
+                "pointsPerUnit": 70,
+                "thresholdConstraints": { "max": 1 },
+                "rules": ["genericRulesId_2"],
+                "description": "Tipi con flagello",
+                "imagine": "flagellants.jpg"
+              },
+              {
+                "id": 5,
+                "name": "Skirmishers",
+                "type": "Infantry",
+                "attacks": [{ "melee": 4 }],
+                "hits": 3,
+                "armour": 0,
+                "command": 0,
+                "unitSize": 1,
+                "pointsPerUnit": 20,
+                "thresholdConstraints": {},
+                "rules": ["genericRulesId_3"],
+                "description": "Tipi con Skirmishers",
+                "imagine": "skirmishers.jpg"
+              },
+              {
+                "id": 6,
+                "name": "Knights",
+                "type": "Cavalry",
+                "attacks": [{ "melee": 3 }],
+                "hits": 3,
+                "armour": 4,
+                "command": 0,
+                "unitSize": 3,
+                "pointsPerUnit": 110,
+                "thresholdConstraints": {},
+                "rules": [],
+                "description": "Tipi con Knights",
+                "imagine": "knights.jpg"
+              },
+              {
+                "id": 7,
+                "name": "Pistoliers",
+                "type": "Cavalry",
+                "attacks": [{ "melee": 3 }, { "ranged": 1 }],
+                "hits": 3,
+                "armour": 5,
+                "command": 0,
+                "unitSize": 3,
+                "pointsPerUnit": 95,
+                "thresholdConstraints": { "max": 4 },
+                "rules": ["genericRulesId_4"],
+                "description": "Tipi con Pistoliers",
+                "imagine": "pistoliers.jpg"
+              },
+              {
+                "id": 8,
+                "name": "Helblaster",
+                "type": "Artillery",
+                "attacks": [
+                  { "artillery": 1 },
+                  { "shortRangeArtillery": 8 },
+                  { "midRangeArtillery": 4 },
+                  { "longRangeArtillery": 2 }
+                ],
+                "hits": 2,
+                "armour": 0,
+                "command": 0,
+                "unitSize": 1,
+                "pointsPerUnit": 50,
+                "thresholdConstraints": { "max": 1 },
+                "rules": ["genericRulesId_5"],
+                "description": "Tipi con Helblaster",
+                "imagine": "helblaster.jpg"
+              },
+              {
+                "id": 9,
+                "name": "Cannon",
+                "type": "Artillery",
+                "attacks": [{ "artillery": 1 }, { "bounce": 2 }],
+                "hits": 2,
+                "armour": 0,
+                "command": 0,
+                "unitSize": 2,
+                "pointsPerUnit": 85,
+                "thresholdConstraints": { "max": 1 },
+                "rules": [],
+                "description": "Tipi con Cannon",
+                "imagine": "cannon.jpg"
+              },
+              {
+                "id": 10,
+                "name": "Steam Tank",
+                "type": "Machine",
+                "attacks": [{ "artillery": 3 }, { "artillery2": 3 }],
+                "hits": 4,
+                "armour": 3,
+                "command": 0,
+                "unitSize": 1,
+                "pointsPerUnit": 130,
+                "thresholdConstraints": { "max": 1 },
+                "rules": ["genericRulesId_6"],
+                "description": "Tipi con Steam Tank",
+                "imagine": "steamTank.jpg"
+              },
+              {
+                "id": 11,
+                "name": "General",
+                "type": "General",
+                "attacks": [{ "bonus": 2 }],
+                "hits": 0,
+                "armour": 0,
+                "command": 9,
+                "unitSize": 1,
+                "pointsPerUnit": 125,
+                "thresholdConstraints": { "minFixed": 1, "maxFixed": 1 },
+                "rules": [],
+                "description": "Tipi con General",
+                "imagine": "general.jpg"
+              },
+              {
+                "id": 12,
+                "name": "Hero",
+                "type": "Hero",
+                "attacks": [{ "bonus": 1 }],
+                "hits": 0,
+                "armour": 0,
+                "command": 8,
+                "unitSize": 1,
+                "pointsPerUnit": 80,
+                "thresholdConstraints": { "max": 2 },
+                "rules": [],
+                "description": "Tipi con Hero",
+                "imagine": "hero.jpg"
+              },
+              {
+                "id": 13,
+                "name": "Wizard",
+                "type": "Wizard",
+                "attacks": [],
+                "hits": 0,
+                "armour": 0,
+                "command": 7,
+                "unitSize": 1,
+                "pointsPerUnit": 45,
+                "thresholdConstraints": { "max": 1 },
+                "rules": [],
+                "description": "Tipi con Wizard",
+                "imagine": "wizard.jpg"
+              },
+              {
+                "id": 14,
+                "name": "Griffon",
+                "type": "MonstrousMount",
+                "attacks": [{ "bonus": 2 }],
+                "hits": 0,
+                "armour": 0,
+                "command": 0,
+                "unitSize": 1,
+                "pointsPerUnit": 80,
+                "thresholdConstraints": { "max": 1 },
+                "rules": ["genericRulesId_7"],
+                "description": "Tipi con Griffon",
+                "imagine": "griffon.jpg"
+              },
+              {
+                "id": 15,
+                "name": "War Altar",
+                "type": "ChariotMount",
+                "attacks": [{ "bonus": 1 }],
+                "hits": 0,
+                "armour": 0,
+                "command": 0,
+                "unitSize": 1,
+                "pointsPerUnit": 15,
+                "thresholdConstraints": { "max": 1 },
+                "rules": ["genericRulesId_8"],
+                "description": "Tipi con War Altar",
+                "imagine": "warAltar.jpg"
+              }
+            ],
+            "unitRules": [
+              {
+                "id": "genericRulesId_1",
+                "name": "Handgunners rule",
+                "gameRules": [
+                  {
+                    "gameRuleId": 1,
+                    "params": [
+                      {
+                        "variable": "malus",
+                        "amount": 1
+                      }
+                    ]
+                  },
+                  {
+                    "gameRuleId": 2,
+                    "params": [
+                      {
+                        "variable": "countingAsUnitId",
+                        "value": 2
+                      },
+                      {
+                        "variable": "stepPoints",
+                        "value": 1000
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "genericRulesId_2",
+                "name": "Flagellants rule",
+                "gameRules": [
+                  {
+                    "gameRuleId": 3,
+                    "params": []
+                  },
+                  {
+                    "gameRuleId": 4,
+                    "params": []
+                  },
+                  {
+                    "gameRuleId": 5,
+                    "params": []
+                  },
+                  {
+                    "gameRuleId": 6,
+                    "params": []
+                  },
+                  {
+                    "gameRuleId": 7,
+                    "params": []
+                  }
+                ]
+              },
+              {
+                "id": "genericRulesId_3",
+                "name": "Skirmishers rule",
+                "gameRules": [
+                  {
+                    "gameRuleId": 8,
+                    "params": []
+                  },
+                  {
+                    "gameRuleId": 9,
+                    "params": []
+                  }
+                ]
+              },
+              {
+                "id": "genericRulesId_4",
+                "name": "Pistoliers rule",
+                "gameRules": [
+                  {
+                    "gameRuleId": 10,
+                    "params": [
+                      {
+                        "variable": "maximumShootingRange",
+                        "value": 15
+                      }
+                    ]
+                  },
+                  {
+                    "gameRuleId": 10,
+                    "params": []
+                  }
+                ]
+              },
+              {
+                "id": "genericRulesId_5",
+                "name": "Hellblaster rule",
+                "gameRules": [
+                  {
+                    "gameRuleId": 10,
+                    "params": [
+                      {
+                        "variable": "maximumShootingRange",
+                        "value": 30
+                      }
+                    ]
+                  },
+                  {
+                    "gameRuleId": 10,
+                    "params": [
+                      {
+                        "variable": "valuesToCheck",
+                        "value": 1
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "genericRulesId_6",
+                "name": "Steam Tank rule",
+                "gameRules": [
+                  {
+                    "gameRuleId": 1,
+                    "params": []
+                  },
+                  {
+                    "gameRuleId": 6,
+                    "params": []
+                  },
+                  {
+                    "gameRuleId": 10,
+                    "params": []
+                  },
+                  {
+                    "gameRuleId": 11,
+                    "params": []
+                  },
+                  {
+                    "gameRuleId": 17,
+                    "params": []
+                  },
+                  {
+                    "gameRuleId": 18,
+                    "params": []
+                  },
+                  {
+                    "gameRuleId": 19,
+                    "params": []
+                  }
+                ]
+              },
+              {
+                "id": "genericRulesId_7",
+                "name": "Griffon rule",
+                "gameRules": [
+                  {
+                    "gameRuleId": 13,
+                    "params": []
+                  },
+                  {
+                    "gameRuleId": 14,
+                    "params": []
+                  }
+                ]
+              },
+              {
+                "id": "genericRulesId_8",
+                "name": "War Altar rule",
+                "gameRules": [
+                  {
+                    "gameRuleId": 15,
+                    "params": []
+                  },
+                  {
+                    "gameRuleId": 16,
+                    "params": []
+                  }
+                ]
+              }
+            ]
           }
-        ],
-        "constraintsByThreshold": {
-          "step": 1000
-        }
+        ]
       },
       {
         "id": 2,
-        "name": "bretonini",
-        "displayName": "BRETONINI",
-        "units": [
+        "name": "Star Conflict",
+        "factions": [
           {
-            "id": 7,
-            "name": "Cavalierino",
-            "points": 15,
-            "stats": { "attack": 1, "defense": 2 },
-            "rules": ["coraggioso"],
-            "description": "Un cavallone",
-            "thresholdConstraints": { "minFixed": 1, "maxFixed": 1 }
-          }
-        ],
-        "constraintsByThreshold": {
-          "step": 1000
-        }
-      },
-      {
-        "id": 3,
-        "name": "empirini",
-        "displayName": "EMPIRINI",
-        "units": [
-          {
-            "id": 8,
-            "name": "Halberdiers",
-            "type":"Infantry",
-            "attacks": [{"melee":3}],
-            "hits":3,
-            "armour":6,
-            "command":0,
-            "unitSize": 3,
-            "pointsPerUnit": 45,
-            "thresholdConstraints": { "min": 2},
-            "rules": ["empiriniRules1"],
-            "description": "Tipi con alabarda",
-            "imagine":"halberdiers.jpg"
-          },
-          {
-            "id": 9,
-            "name": "Crossbowmen",
-            "type":"Infantry",
-            "attacks": [{"melee":3}, {"ranged":1}],
-            "hits":3,
-            "armour":0,
-            "command":0,
-            "unitSize": 3,
-            "pointsPerUnit": 55,
-            "thresholdConstraints": { "min": 2},
-            "rules": [],
-            "description": "Tipi con balestra",
-            "imagine":"crossbowmen.jpg"
-          }
-        ],
-        "constraintsByThreshold": {
-          "step": 1000
-        },
-        "armyRules":[
-          {
-            "name": "empiriniGenericRules1", "rule": "This faction has special rule!"
-          }
-        ],
-        "image": "empirini.jpg",
-        "unitRules": [
-          {
-            "name": "empiriniRules1", "rule": "This unit has special rule!"
-          }
-        ],
-        "armySpells": [
-          {
-            "name": "Teleport",
-            "effect": "Effect of magic",
-            "rangeInCm": 30,
-            "difficultyToCast": 5,
-            "flavourText": "An ancientMagic!"
+            "id": 3,
+            "name": "xenon",
+            "displayName": "XEN-On",
+            "units": [
+              {
+                "id": 6,
+                "name": "Drone Esploratore",
+                "points": 25,
+                "systems": { "scan": 4, "cloak": 2 },
+                "description": "Scout meccanico dotato di mimetismo leggero."
+              },
+              {
+                "id": 7,
+                "name": "Battlesuit Sigma",
+                "points": 80,
+                "systems": { "armor": 5, "plasma": 4 },
+                "rules": ["pesante", "avanzato"],
+                "description": "Unità da guerra pesante della stirpe Xen."
+              }
+            ],
+            "constraints": {
+              "maxPoints": 250,
+              "minUnits": 1
+            }
           }
         ]
       }
     ]
   },
   {
-    "id": 2,
-    "name": "Star Conflict",
-    "factions": [
+    "genericGameRules": [
+      {
+        "id": 1,
+        "name": "enemyArmorMalus",
+        "effect": "armorReduction",
+        "target": "hitEnemies",
+        "malus": 0
+      },
+      {
+        "id": 2,
+        "name": "countingAsOtherUnit",
+        "effect": "aliasUnit",
+        "stepPoints": 0,
+        "countingAsUnitId": 0
+      },
       {
         "id": 3,
-        "name": "xenon",
-        "displayName": "XEN-On",
-        "units": [
+        "name": "alwaysCharging",
+        "effect": "charging",
+        "value": "always",
+        "conditions": []
+      },
+      {
+        "id": 4,
+        "name": "cantBeGivenOrder",
+        "effect": "order",
+        "target": "self",
+        "value": "never",
+        "conditions": []
+      },
+      {
+        "id": 5,
+        "name": "neverDrivenBack",
+        "effect": "backing",
+        "value": "never",
+        "conditions": ["whenShot"]
+      },
+      {
+        "id": 6,
+        "name": "doNotRollForDriveBacks",
+        "effect": "backing",
+        "target": "self",
+        "value": "never",
+        "conditions": []
+      },
+      {
+        "id": 7,
+        "name": "unaffectedByTerror",
+        "effect": "terror",
+        "target": "self",
+        "value": "never",
+        "conditions": []
+      },
+      {
+        "id": 8,
+        "name": "mustBeAttached",
+        "effect": "attachToUnit",
+        "inheritedStats": ["Armor"],
+        "increaseSizeUnit": "true"
+      },
+      {
+        "id": 9,
+        "name": "countForCommandPenalty",
+        "value": "never"
+      },
+      {
+        "id": 10,
+        "name": "differentRangeFromStandard",
+        "type": "maximumShootingRange",
+        "value": 0
+      },
+      {
+        "id": 11,
+        "name": "visionDegree",
+        "value": 360
+      },
+      {
+        "id": 12,
+        "name": "malfunctioningArtillery",
+        "valuesToCheck": 0,
+        "amountOfCheckedValues": [
           {
-            "id": 6,
-            "name": "Drone Esploratore",
-            "points": 25,
-            "systems": { "scan": 4, "cloak": 2 },
-            "description": "Scout meccanico dotato di mimetismo leggero."
+            "howMany": [1, 2],
+            "effect": "none",
+            "typeOfMisfire": null,
+            "otherDamage": null,
+            "secondaryEffect": []
           },
           {
-            "id": 7,
-            "name": "Battlesuit Sigma",
-            "points": 80,
-            "systems": { "armor": 5, "plasma": 4 },
-            "rules": ["pesante", "avanzato"],
-            "description": "Unità da guerra pesante della stirpe Xen."
+            "howMany": [3],
+            "effect": "misfire",
+            "typeOfMisfire": "noHit",
+            "otherDamage": null,
+            "secondaryEffect": [{ "damage": "npShotsHit" }]
+          },
+          {
+            "howMany": [4],
+            "effect": "misfire",
+            "typeOfMisfire": "destroyItself",
+            "otherDamage": "crew",
+            "secondaryEffect": [
+              {
+                "damage": "shot",
+                "howMany": 6,
+                "target": "enemy",
+                "targetCondition": "charginMachine"
+              }
+            ]
           }
-        ],
-        "constraints": {
-          "maxPoints": 250,
-          "minUnits": 1
-        }
+        ]
+      },
+      {
+        "id": 13,
+        "name": "mount",
+        "type": "flying",
+        "rideableBy": ["Wizard", "General", "Hero"],
+        "increaseAttacks": "true"
+      },
+      {
+        "id": 14,
+        "name": "causeTerror",
+        "effect": "terror",
+        "target": "enemy"
+      },
+      {
+        "id": 15,
+        "name": "mount",
+        "type": "ground",
+        "rideableBy": ["Wizard"],
+        "increaseAttacks": "true"
+      },
+      {
+        "id": 16,
+        "name": "castingBonus",
+        "effect": "casting",
+        "target": "rider",
+        "usable": "once"
+      },
+      {
+        "id": 17,
+        "name": "brigading",
+        "value": "false"
+      },
+      {
+        "id": 18,
+        "name": "canShootAtCertainTargets",
+        "target": "enemies",
+        "targetConditions": ["charging"]
+      },
+      {
+        "id": 19,
+        "name": "differentMovementRange",
+        "value": 20
       }
     ]
   }
