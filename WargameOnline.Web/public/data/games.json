@@ -4,6 +4,8 @@
       {
         "id": 1,
         "name": "Warmaster",
+        "mapType": "Free",
+        "measureUnit":"cm",
         "factions": [
           {
             "id": 1,
@@ -14,13 +16,7 @@
             "constraintsByThreshold": {
               "step": 1000
             },
-            "armyRules": [
-              {
-                "id": "armyRulesId_1",
-                "ruleDescription": "This faction has special rule!",
-                "rules": []
-              }
-            ],
+            "armyRules": [],
             "armySpells": [
               {
                 "id":1,
@@ -466,6 +462,340 @@
                 ]
               }
             ]
+          },
+          {
+            "id":2,
+            "name": "Tomb Kings",
+            "displayName":"Tomb Kings",
+            "description": "Mummies",
+            "image": "2.jpg",
+            "constraintsByThreshold": {
+              "step": 1000
+            },
+            "armyRules":[
+              {
+                "id": "armyRulesId_1",
+                "ruleDescription": "Tomb Kings units are undead!",
+                "rules": [
+                   {
+                    "gameRuleId": 20,
+                    "params": []
+                  },
+                  {
+                    "gameRuleId": 21,
+                    "params": []
+                  }, 
+                  {
+                    "gameRuleId": 21,
+                    "params": [
+                      {
+                        "variable": "whomCondition",
+                        "amount": "terryfying"
+                      },
+                      {
+                        "variable": "distance",
+                        "amount": 0
+                      },
+                      {
+                        "variable": "statsAffected",
+                        "amount": ["combatPenalty"]
+                      }
+                    ]
+                  },
+                   {
+                    "gameRuleId": 7,
+                    "params": [ {
+                        "variable": "effect",
+                        "amount": "confusion"
+                      }]
+                  }
+                ]
+              }],
+            "armySpells":[
+              {
+                "id":1,
+                "name": "Raise Dead",
+                "effect": "Effect of magic",
+                "gameRules": [],
+                "rangeInCm": 30,
+                "difficultyToCast": 5,
+                "flavourText": "At the Wizard‘s beckoning the mangled corpses that litter the battleground rise from the dead to continue the slaughter."
+              },
+              {
+                "id":2,
+                "name": "Touch of Death",
+                "effect": "Effect of magic",
+                "gameRules": [],
+                "rangeInCm": 0,
+                "difficultyToCast": 4,
+                "flavourText": "The Wizard‘s enemies crumble to dust as he smites them with the corrupting Touch of Death."
+              },
+              {
+                "id":3,
+                "name": "Doom and Despair",
+                "effect": "Effect of magic",
+                "gameRules": [],
+                "rangeInCm": 60,
+                "difficultyToCast": 4,
+                "flavourText": "A dark cloud of doom and despair settles over the enemy, sapping their courage and dampening their warlike spirit."
+              },
+              {
+                "id":4,
+                "name": "Death Bolt",
+                "effect": "Effect of magic",
+                "gameRules": [],
+                "rangeInCm": 30,
+                "difficultyToCast": 5,
+                "flavourText": "A fearsome bolt of sorcerous lightning flies from the Wizard‘s outstretched finger tips and strikes an enemy unit."
+              }
+            ],
+            "units":[
+               {
+                "id": 1,
+                "name": "Skeletons",
+                "type": "Infantry",
+                "attacks": [{ "melee": 2 }],
+                "hits": 3,
+                "armour": 6,
+                "command": 0,
+                "unitSize": 3,
+                "pointsPerUnit": 30,
+                "thresholdConstraints": { "min": 2 },
+                "rules": [],
+                "description": "Spooky skeletons",
+                "imagine": "skeletons.jpg"
+              },
+              {
+                "id": 2,
+                "name": "Skeleton Bowmen",
+                "type": "Infantry",
+                "attacks": [{ "melee": 2 },{"ranged": 1}],
+                "hits": 3,
+                "armour": 0,
+                "command": 0,
+                "unitSize": 3,
+                "pointsPerUnit": 45,
+                "thresholdConstraints": { "min": 2 },
+                "rules": [],
+                "description": "Spooky skeleton archers",
+                "imagine": "skeletonBowmen.jpg"
+              },
+              {
+                "id": 3,
+                "name": "Skeleton Cavalry",
+                "type": "Cavalry",
+                "attacks": [{ "melee": 2 }],
+                "hits": 3,
+                "armour": 5,
+                "command": 0,
+                "unitSize": 3,
+                "pointsPerUnit": 60,
+                "thresholdConstraints": {},
+                "rules": [],
+                "description": "Spooky skeleton cavalry",
+                "imagine": "skeletonCavalry.jpg"
+              },
+              {
+                "id": 4,
+                "name": "Skeleton Chariots",
+                "type": "Chariot",
+                "attacks": [{ "melee": 3 },{"ranged": 1}],
+                "hits": 3,
+                "armour": 5,
+                "command": 0,
+                "unitSize": 3,
+                "pointsPerUnit": 110,
+                "thresholdConstraints": {"max":3},
+                "rules": [],
+                "description": "Spooky skeleton cavalry",
+                "imagine": "skeletonCavalry.jpg"
+              },
+              {
+                "id": 5,
+                "name": "Carrion",
+                "type": "Monster",
+                "attacks": [{ "melee": 2 }],
+                "hits": 3,
+                "armour": 6,
+                "command": 0,
+                "unitSize": 3,
+                "pointsPerUnit": 65,
+                "thresholdConstraints": {"max":1},
+                "rules": [],
+                "description": "Spooky carrion",
+                "imagine": "carrion.jpg"
+              },
+              {
+                "id": 6,
+                "name": "Bone Giant",
+                "type": "Monster",
+                "attacks": [{ "melee": 6 }],
+                "hits": 4,
+                "armour": 4,
+                "command": 0,
+                "unitSize": 1,
+                "pointsPerUnit": 110,
+                "thresholdConstraints": {"max":1},
+                "rules": [],
+                "description": "Spooky Bone Giant",
+                "imagine": "boneGiant.jpg"
+              },
+              {
+                "id": 7,
+                "name": "Sphinx",
+                "type": "Monster",
+                "attacks": [{ "melee": 4 }],
+                "hits": 6,
+                "armour": 3,
+                "command": 0,
+                "unitSize": 1,
+                "pointsPerUnit": 135,
+                "thresholdConstraints": {"max":1},
+                "rules": [],
+                "description": "Spooky Sphinx",
+                "imagine": "sphinx.jpg"
+              },
+              {
+                "id": 8,
+                "name": "Skull Chukka",
+                "type": "Artillery",
+                "attacks": [{ "artillery": 1 },{ "artillery2": 3 }],
+                "hits": 3,
+                "armour": 0,
+                "command": 0,
+                "unitSize": 1,
+                "pointsPerUnit": 85,
+                "thresholdConstraints": {"max":1},
+                "rules": [],
+                "description": "Skull Chukka",
+                "imagine": "skullChukka.jpg"
+              },
+              {
+                "id": 9,
+                "name": "Bone Thrower",
+                "type": "Artillery",
+                "attacks": [{ "artillery": 1 },{ "skewer": 2 }],
+                "hits": 3,
+                "armour": 0,
+                "command": 0,
+                "unitSize": 2,
+                "pointsPerUnit": 65,
+                "thresholdConstraints": {"max":1},
+                "rules": [],
+                "description": "Bone Thrower",
+                "imagine": "boneThrower.jpg"
+              },
+              {
+                "id": 10,
+                "name": "Tomb King",
+                "type": "General",
+                "attacks": [{ "bonus": 2 }],
+                "hits": 0,
+                "armour": 0,
+                "command": 9,
+                "unitSize": 1,
+                "pointsPerUnit": 130,
+                "thresholdConstraints": {"minFixed":1},
+                "rules": [],
+                "description": "General of TombKings",
+                "imagine": "tombKingsGeneral.jpg"
+              }
+            ],
+            "unitRules":[]
+          }
+        ],
+        "itemsRule":{
+          "itemPlayability": {
+            "limitationsPer":"type",
+            "howMany": 1
+          } 
+        },
+        "items":[
+          {
+            "id":1,
+            "name":"Sword Of Destruction",
+            "cost":{"currency":"points", "amount": 10},
+            "reservedToUnitType":"any",
+            "description":"",
+            "effects":[{
+              "action": "reroll",
+              "who": "enemy",
+              "whomCondition":"touching",
+              "what": {
+                "stat":"armour",
+                "condition":"successful"
+              },
+              "limits": [{"howMany": 1, "who": "enemyUnit", "when": null}]
+            }]
+          },
+          {
+            "id":2,
+            "name":"Sword Of Fate",
+            "cost":{"currency":"points", "amount": 5},
+            "reservedToUnitType":"any",
+            "description":"",
+            "effects":[{
+              "action": "bonus",
+              "who": "self",
+              "whomCondition":"combat",
+              "what": {
+                "stat":"attack",
+                "amount": 1
+              },
+              "limits": [{"who": "self","when": "firstRoundFirstCombat", "howManyTimes": "oncePerGame"}]
+            }]
+          },
+          {
+            "id":3,
+            "name":"Sword Of Cleaving",
+            "cost":{"currency":"points", "amount": 10},
+            "reservedToUnitType":"any",
+            "description":"",
+            "effects":[{
+              "action": "reroll",
+              "who": "self",
+              "whomCondition":"combat",
+              "what": {
+                "stat":"attack",
+                "condition":"unsuccessful",
+                "amount": 1
+              },
+              "limits": [{"who": "self","when": "eachRoundOfCombat", "howManyTimes": "always"}]
+            }]
+          }
+          ,
+          {
+            "id":4,
+            "name":"Sword Of Might",
+            "cost":{"currency":"points", "amount": 10},
+            "reservedToUnitType":"any",
+            "description":"",
+            "effects":[{
+              "action": "bonus",
+              "who": "self",
+              "what": {
+                "stat":"attack",
+                "amount": 1
+              },
+              "limits": [{"who": "self", "howManyTimes": "always"}]
+            }]
+          }
+          ,
+          {
+            "id":5,
+            "name":"Crown of Command",
+            "cost":{"currency":"points", "amount": 70},
+            "reservedToUnitType":"general",
+            "description":"",
+            "effects":[{
+              "action": "statReplacement",
+              "who": "self",
+              "what": {
+                "stat":"command",
+                "amount": 10
+              },
+              "limits": [{"inCaseOfFailure":"breaksForever", "when": "firstCommandEachTurn","howManyTimes": "always"}]
+            }]
           }
         ]
       },
@@ -551,10 +881,10 @@
       },
       {
         "id": 7,
-        "name": "unaffectedByTerror",
+        "name": "unaffectedBy",
         "effect": "terror",
         "target": "self",
-        "value": "never",
+        "value": "always",
         "conditions": []
       },
       {
@@ -657,6 +987,18 @@
         "id": 19,
         "name": "differentMovementRange",
         "value": 20
+      }, 
+      {
+        "id": 20,
+        "name": "usesInitiative",
+        "value": "false"
+      },{
+        "id":21,
+        "name": "unaffectedBy",
+        "whom":"enemies",
+        "whomCondition": "near",
+        "distance": 20,
+        "statsAffected": ["commandPenalty"]
       }
     ]
   }

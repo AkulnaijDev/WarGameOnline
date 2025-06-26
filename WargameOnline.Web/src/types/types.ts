@@ -6,10 +6,45 @@ export type SavedArmy = {
   units: UnitWithCount[];
 };
 
+export type Cost = {
+  currency: string;
+  amount: number;
+}
+
+export type Item = {
+id: number;
+  name: string;
+  cost: Cost;
+  reservedToUnitType: string;
+  description: string;
+  effects:ItemEffect[];
+}
+
+export type ItemEffect = {
+  action?: string;
+  who?: string;
+  whomCondition?: string;
+  what?: any;
+  limits?: any;
+}
+
+export type ItemsLimitations = {
+  limitationsPer?: string;
+  howMany?: number;
+}
+
+export type ItemsRule = {
+  itemPlayabilityPerType?: ItemsLimitations;
+}
+
 export type Game = {
   id: number;
   name: string;
   factions: Faction[];
+  itemsRules?: ItemsRule;
+  items?: Item[];
+  mapType?: string;
+  measureUnit?: string;
 };
 
 
