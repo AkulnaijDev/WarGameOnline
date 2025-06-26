@@ -316,6 +316,44 @@ export default function ArmyCreator() {
     );
   };
 
+  const handleAssignItem = (itemId: number, unitName: string) => {
+  setSelectedUnits((prev) => {
+    const idx = prev.findIndex(
+      (u) => u.name === unitName && (!u.items || u.items.length < u.count)
+    );
+    if (idx === -1) return prev;
+    const base = prev[idx];
+    const updated = [...prev];
+    updated[idx] = { ...base, count: base.count - 1 };
+    updated.push({ ...base, count: 1, items: [{ itemId }] });
+    return updated;
+  });
+};
+
+const handleRemoveItemFromUnit = (itemId: number, unitIndex: number) => {
+  setSelectedUnits((prev) => {
+    const updated = [...prev];
+    const removed = updated.splice(unitIndex, 1)[0];
+
+    const mergeIdx = updated.findIndex(
+      (u) => u.name === removed.name && (!u.items || u.items.length < u.count)
+    );
+
+    if (mergeIdx !== -1) {
+      updated[mergeIdx] = {
+        ...updated[mergeIdx],
+        count: updated[mergeIdx].count + 1,
+      };
+    } else {
+      updated.push({ ...removed, count: 1, items: [] });
+    }
+
+    return updated;
+  });
+};
+
+
+
   if (mode === "start") {
     return (
       <div className="min-h-screen flex flex-col sm:flex-row bg-bg text-white">
@@ -462,6 +500,8 @@ export default function ArmyCreator() {
                 validateDynamic().length > 0
               }
               game={game}
+                onAssignItem={handleAssignItem}
+  onRemoveItemFromUnit={handleRemoveItemFromUnit}
             />
           </div>
         </div>
