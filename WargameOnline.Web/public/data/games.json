@@ -706,8 +706,8 @@
         ],
         "itemsRule":{
           "itemPlayability": {
-            "limitationsPer":"type",
-            "howMany": 1
+            "itemsInSingleton":true,
+            "howManyPerUnit": 1
           } 
         },
         "items":[

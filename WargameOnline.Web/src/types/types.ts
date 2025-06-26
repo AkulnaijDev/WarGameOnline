@@ -29,8 +29,8 @@ export type ItemEffect = {
 }
 
 export type ItemsLimitations = {
-  limitationsPer?: string;
-  howMany?: number;
+  itemsInSingleton?: boolean;
+  howManyPerUnit?: number;
 }
 
 export type ItemsRule = {
