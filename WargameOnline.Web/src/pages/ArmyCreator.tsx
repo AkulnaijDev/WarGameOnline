@@ -18,7 +18,6 @@ import {
 } from "../api/armyApi";
 import { useAuth } from "../context/AuthContext";
 import {
-  Game,
   Faction,
   Unit,
   UnitWithCount,
@@ -27,23 +26,26 @@ import {
   Mode,
   AddableUnit,
   GameSystem,
-  GenericGameRule
+  GenericGameRule,
 } from "../types/types";
 import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
 export default function ArmyCreator() {
-
   const [rawData, setRawData] = useState<any[]>([]);
-const [gameSystems, setGameSystems] = useState<GameSystem[]>([]);
-const [genericGameRules, setGenericGameRules] = useState<GenericGameRule[]>([]);
-const [game, setGame] = useState<GameSystem | null>(null);
-
+  const [gameSystems, setGameSystems] = useState<GameSystem[]>([]);
+  const [genericGameRules, setGenericGameRules] = useState<GenericGameRule[]>(
+    []
+  );
+  const [game, setGame] = useState<GameSystem | null>(null);
 
   const [mode, setMode] = useState<Mode>("start");
 
   const [faction, setFaction] = useState<Faction | null>(null);
   const [armyName, setArmyName] = useState("");
   const [selectedUnits, setSelectedUnits] = useState<UnitWithCount[]>([]);
+  const [selectedItemUnitMap, setSelectedItemUnitMap] = useState<
+    Record<number, number | "">
+  >({});
   const [selectedUnitIndex, setSelectedUnitIndex] = useState<number | null>(
     null
   );
@@ -53,22 +55,23 @@ const [game, setGame] = useState<GameSystem | null>(null);
   const { token } = useAuth();
 
   useEffect(() => {
-  fetch("/data/games.json")
-    .then((res) => res.json())
-    .then((data) => {
-      setRawData(data);
+    fetch("/data/games.json")
+      .then((res) => res.json())
+      .then((data) => {
+        setRawData(data);
 
-     const gameSystemsEntry = data.find((el: any) => typeof el === "object" && "gameSystems" in el);
-const genericRulesEntry = data.find((el: any) => typeof el === "object" && "genericGameRules" in el);
+        const gameSystemsEntry = data.find(
+          (el: any) => typeof el === "object" && "gameSystems" in el
+        );
+        const genericRulesEntry = data.find(
+          (el: any) => typeof el === "object" && "genericGameRules" in el
+        );
 
-
-      setGameSystems(gameSystemsEntry?.gameSystems || []);
-      setGenericGameRules(genericRulesEntry?.genericGameRules || []);
-    })
-    .catch(console.error);
-}, []);
-
-
+        setGameSystems(gameSystemsEntry?.gameSystems || []);
+        setGenericGameRules(genericRulesEntry?.genericGameRules || []);
+      })
+      .catch(console.error);
+  }, []);
 
   useEffect(() => {
     if (!token) return;
@@ -88,37 +91,38 @@ const genericRulesEntry = data.find((el: any) => typeof el === "object" && "gene
     thresholdStep > 0 ? Math.floor(totalPoints() / thresholdStep) + 1 : 1;
 
   function totalPoints() {
-  return selectedUnits.reduce((sum, u) => {
-  const points = (u.pointsPerUnit ?? u.points ?? 0);
-
-    return sum + points * u.count;
-  }, 0);
-}
-
+    return selectedUnits.reduce((sum, u) => {
+      const unitPoints = (u.pointsPerUnit ?? u.points ?? 0) * u.count;
+      const itemPoints =
+        u.items?.reduce((s, a) => {
+          const item = game?.items?.find((i) => i.id === a.itemId);
+          return s + (item?.cost.amount ?? 0);
+        }, 0) ?? 0;
+      return sum + unitPoints + itemPoints;
+    }, 0);
+  }
 
   function totalCount() {
     return selectedUnits.reduce((sum, u) => sum + u.count, 0);
   }
 
   function validateBasic() {
-  const constraints =
-    ("minUnits" in (faction?.constraintsByThreshold || {})) ||
-    ("maxPoints" in (faction?.constraintsByThreshold || {}))
-      ? (faction?.constraintsByThreshold as { minUnits?: number; maxPoints?: number })
-      : faction?.constraints ?? {};
+    const constraints =
+      "minUnits" in (faction?.constraintsByThreshold || {}) ||
+      "maxPoints" in (faction?.constraintsByThreshold || {})
+        ? (faction?.constraintsByThreshold as {
+            minUnits?: number;
+            maxPoints?: number;
+          })
+        : faction?.constraints ?? {};
 
-  const { maxPoints, minUnits } = constraints || {};
+    const { maxPoints, minUnits } = constraints || {};
 
-  return (
-    (!maxPoints || totalPoints() <= maxPoints) &&
-    (!minUnits || totalCount() >= minUnits)
-  );
-}
-
-
-
-
-
+    return (
+      (!maxPoints || totalPoints() <= maxPoints) &&
+      (!minUnits || totalCount() >= minUnits)
+    );
+  }
 
   function validateDynamic(): string[] {
     const violations: string[] = [];
@@ -154,10 +158,10 @@ const genericRulesEntry = data.find((el: any) => typeof el === "object" && "gene
       }
     }
 
-     // 👉 Nuovo vincolo: nome esercito obbligatorio
-  if (!armyName?.trim()) {
-    violations.push(t("insertNameForYourList"));
-  }
+    // 👉 Nuovo vincolo: nome esercito obbligatorio
+    if (!armyName?.trim()) {
+      violations.push(t("insertNameForYourList"));
+    }
 
     return violations;
   }
@@ -170,6 +174,19 @@ const genericRulesEntry = data.find((el: any) => typeof el === "object" && "gene
     setSelectedUnitIndex(null);
     setSelectedArmyId(null);
   };
+
+  const groupedUnits = selectedUnits.reduce((acc, unit) => {
+    if (unit.items?.length) {
+      unit.items.forEach((item) => {
+        acc.push({ ...unit, count: 1, itemAssigned: item.itemId });
+      });
+      const left = unit.count - unit.items.length;
+      if (left > 0) acc.push({ ...unit, count: left });
+    } else {
+      acc.push(unit);
+    }
+    return acc;
+  }, [] as (UnitWithCount & { itemAssigned?: number })[]);
 
   const handleLoadArmy = async (id: number) => {
     try {
@@ -429,10 +446,10 @@ const genericRulesEntry = data.find((el: any) => typeof el === "object" && "gene
               basicValid={validateBasic()}
               dynamicValid={validateDynamic().length === 0}
               violations={validateDynamic()}
-               minUnits={
-    faction?.constraintsByThreshold?.step ??
-    faction?.constraints?.minUnits
-  }
+              minUnits={
+                faction?.constraintsByThreshold?.step ??
+                faction?.constraints?.minUnits
+              }
               selectedArmyId={selectedArmyId}
               onChangeCount={handleChangeCount}
               onExport={handleExportPdf}
@@ -444,6 +461,7 @@ const genericRulesEntry = data.find((el: any) => typeof el === "object" && "gene
                 !validateBasic() ||
                 validateDynamic().length > 0
               }
+              game={game}
             />
           </div>
         </div>

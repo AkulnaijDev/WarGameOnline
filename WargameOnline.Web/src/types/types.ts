@@ -37,15 +37,6 @@ export type ItemsRule = {
   itemPlayabilityPerType?: ItemsLimitations;
 }
 
-export type Game = {
-  id: number;
-  name: string;
-  factions: Faction[];
-  itemsRules?: ItemsRule;
-  items?: Item[];
-  mapType?: string;
-  measureUnit?: string;
-};
 
 
 export type Rule = {
@@ -67,7 +58,12 @@ export type Attack = {
 
 
 
-export type UnitWithCount = Unit & { count: number; points?: number, factionId: number;};
+export type UnitWithCount = Unit & { 
+  count: number; 
+  points?: number, 
+  factionId: number;
+  items?: { itemId: number }[];
+};
 
 export type AddableUnit = Unit & { factionId: number };
 
@@ -174,4 +170,8 @@ export type GameSystem = {
   id: number;
   name: string;
   factions: Faction[];
+    itemsRules?: ItemsRule;
+  items?: Item[];
+  mapType?: string;
+  measureUnit?: string;
 };

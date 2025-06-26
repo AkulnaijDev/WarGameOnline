@@ -1,5 +1,6 @@
-import { UnitWithCount } from "../types/types";
+import { UnitWithCount, GameSystem } from "../types/types";
 import { useTranslation } from "react-i18next";
+import { useState } from "react";
 
 type Props = {
   selectedUnits: UnitWithCount[];
@@ -17,6 +18,7 @@ type Props = {
   onSave: () => void;
   onDelete: () => void;
   isSaveDisabled: boolean;
+  game?: GameSystem | null;
 };
 
 export default function ArmySidebar({
@@ -35,25 +37,37 @@ export default function ArmySidebar({
   onSave,
   onDelete,
   isSaveDisabled,
+  game,
 }: Props) {
   const { t } = useTranslation();
+
+  const [selectedItemUnitMap, setSelectedItemUnitMap] = useState<Record<number, number | "">>({});
+
+  const groupedUnits = selectedUnits.reduce((acc, unit) => {
+    if (unit.items?.length) {
+      const itemId = unit.items[0]?.itemId;
+      const itemName = game?.items?.find((i) => i.id === itemId)?.name ?? "item";
+      acc.push({ ...unit, label: `${unit.name} 🧪 (${itemName})` });
+    } else {
+      acc.push({ ...unit, label: unit.name });
+    }
+    return acc;
+  }, [] as Array<UnitWithCount & { label: string }>);
 
   return (
     <div className="w-full h-full bg-slate-800 p-4 rounded border border-slate-700 space-y-4">
       <h2 className="text-lg font-semibold">{t("yourArmyText")}</h2>
 
-      {selectedUnits.length === 0 ? (
+      {groupedUnits.length === 0 ? (
         <p className="text-sm text-slate-400">{t("noUnitsAddedYet")}</p>
       ) : (
         <ul className="space-y-2">
-          {selectedUnits.map((u) => (
+          {groupedUnits.map((u, idx) => (
             <li
-              key={u.name}
+              key={`${u.name}-${idx}`}
               className="flex justify-between items-center border-b border-slate-600 pb-1"
             >
-              <span className="flex-1">
-                {u.name} ×{u.count}
-              </span>
+              <span className="flex-1">{u.label} ×{u.count}</span>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => onChangeCount(u.name, -1)}
@@ -79,19 +93,78 @@ export default function ArmySidebar({
         </ul>
       )}
 
+      {game?.items && game.items.length > 0 && (
+        <div className="mt-4 border-t border-slate-600 pt-2 text-sm">
+          <h4 className="font-semibold mb-2">🎒 Oggetti disponibili</h4>
+          {game.items.map((item) => (
+            <div key={item.id} className="flex items-center mb-2 space-x-2">
+              <span className="flex-1">{item.name} ({item.cost.amount} pts)</span>
+              <select
+                className="text-xs px-1 py-0.5 rounded bg-slate-700 border"
+                value={selectedItemUnitMap[item.id] ?? ""}
+                onChange={(e) => {
+                  const value = e.target.value === "" ? "" : Number(e.target.value);
+                  setSelectedItemUnitMap((prev) => ({ ...prev, [item.id]: value }));
+                }}
+              >
+                <option value="">— seleziona unità —</option>
+                {selectedUnits.map((u, idx) =>
+                  u.count > 0 &&
+                  (item.reservedToUnitType.toLowerCase() === u.type.toLowerCase() ||
+                    item.reservedToUnitType === "any") ? (
+                    <option key={idx} value={idx}>
+                      {u.name} ×{u.count}
+                    </option>
+                  ) : null
+                )}
+              </select>
+              <button
+                className="px-2 py-1 bg-green-600 rounded text-xs text-white"
+                disabled={
+                  selectedItemUnitMap[item.id] === "" ||
+                  selectedItemUnitMap[item.id] === undefined
+                }
+                onClick={() => {
+                  const unitIdx = selectedItemUnitMap[item.id] as number;
+                  const unit = selectedUnits[unitIdx];
+                  if (!unit) return;
+
+                  const updatedUnits = [...selectedUnits];
+                  updatedUnits[unitIdx] = {
+                    ...unit,
+                    count: unit.count - 1,
+                  };
+
+                  updatedUnits.push({
+                    ...unit,
+                    count: 1,
+                    items: [{ itemId: item.id }],
+                  });
+
+                  setSelectedItemUnitMap((prev) => ({ ...prev, [item.id]: "" }));
+                  // NOTA: se vuoi aggiornare lo state in ArmyCreator, passa un callback da lì
+                }}
+              >
+                Assegna
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
       <div className="mt-4 border-t border-slate-600 pt-2 text-sm space-y-1">
         <p>
           {t("totalUnits")}
-          <span className="font-semibold">{totalCount}</span>
+          <span className="font-semibold"> {totalCount}</span>
         </p>
         <p>
           {t("totalPoints")}
-          <span className="font-semibold">{totalPoints}</span>
+          <span className="font-semibold"> {totalPoints}</span>
         </p>
         {minUnits !== undefined && (
           <p>
             {t("minUnitsRequired")}
-            <span className="font-semibold">{minUnits}</span>
+            <span className="font-semibold"> {minUnits}</span>
           </p>
         )}
         {thresholdStep > 0 && (
