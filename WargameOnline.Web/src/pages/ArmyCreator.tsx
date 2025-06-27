@@ -129,31 +129,35 @@ export default function ArmyCreator() {
 
     const selectedById = new Map<number, number>();
 
-for (const u of selectedUnits) {
-  const prev = selectedById.get(u.id) ?? 0;
-  selectedById.set(u.id, prev + u.count);
-}
-
+    for (const u of selectedUnits) {
+      const prev = selectedById.get(u.id) ?? 0;
+      selectedById.set(u.id, prev + u.count);
+    }
 
     const allUnits: Unit[] = faction?.units || [];
 
     for (const unit of allUnits) {
-  const constraints = unit.thresholdConstraints;
-  if (!constraints) continue;
+      const constraints = unit.thresholdConstraints;
+      if (!constraints) continue;
 
-  const count = selectedById.get(unit.id) ?? 0;
+      const count = selectedById.get(unit.id) ?? 0;
 
-  const min = constraints.min !== undefined ? constraints.min * multiplier : constraints.minFixed;
-  const max = constraints.max !== undefined ? constraints.max * multiplier : constraints.maxFixed;
+      const min =
+        constraints.min !== undefined
+          ? constraints.min * multiplier
+          : constraints.minFixed;
+      const max =
+        constraints.max !== undefined
+          ? constraints.max * multiplier
+          : constraints.maxFixed;
 
-  if (min !== undefined && count < min) {
-    violations.push(`${unit.name}: ${t("atLeastText")} ${min}`);
-  }
-  if (max !== undefined && count > max) {
-    violations.push(`${unit.name}: ${t("atMostText")} ${max}`);
-  }
-}
-
+      if (min !== undefined && count < min) {
+        violations.push(`${unit.name}: ${t("atLeastText")} ${min}`);
+      }
+      if (max !== undefined && count > max) {
+        violations.push(`${unit.name}: ${t("atMostText")} ${max}`);
+      }
+    }
 
     // 👉 Nuovo vincolo: nome esercito obbligatorio
     if (!armyName?.trim()) {
@@ -314,72 +318,81 @@ for (const u of selectedUnits) {
   };
 
   const handleAssignItem = (itemId: number, unitName: string) => {
-  const item = game?.items?.find(i => i.id === itemId);
-  if (!item) return;
+    const item = game?.items?.find((i) => i.id === itemId);
+    if (!item) return;
 
-  const rules = game?.itemsRules;
-  const singleton = rules?.itemPlayabilityPerType?.itemsInSingleton;
-  const perUnit = rules?.itemPlayabilityPerType?.howManyPerUnit ?? 1;
+    // CORREZIONE: Accesso corretto alle regole degli oggetti
+    const rules = game?.itemsRule; // Era: game?.itemsRules
+    const singleton = rules?.itemPlayability?.itemsInSingleton; // Era: rules?.itemPlayabilityPerType?.itemsInSingleton
+    const perUnit = rules?.itemPlayability?.howManyPerUnit ?? 1; // Era: rules?.itemPlayabilityPerType?.howManyPerUnit
 
-  const alreadyAssigned = selectedUnits.some(
-  (u) => u.items?.some(it => it.itemId === itemId)
-);
-if (singleton && alreadyAssigned) {
-  toast.error("Questo oggetto è singleton e già assegnato.");
-  return;
-}
-  const unit = selectedUnits.find(u => u.name === unitName && (u.items?.length ?? 0) < u.count);
-  if (!unit) {
-    toast.error("Nessuna unità valida trovata per l'assegnazione.");
-    return;
-  }
-
-  if ((unit.items?.length ?? 0) >= perUnit) {
-    toast.error(`Questa unità può avere solo ${perUnit} oggetto(i).`);
-    return;
-  }
-
-  if (item.reservedToUnitType !== "any" && unit.type !== item.reservedToUnitType) {
-    toast.error(`Questo oggetto può essere assegnato solo a ${item.reservedToUnitType}`);
-    return;
-  }
-
-  setSelectedUnits((prev) => {
-    const idx = prev.findIndex(
-      (u) => u.name === unitName && (!u.items || u.items.length < u.count)
-    );
-    if (idx === -1) return prev;
-    const base = prev[idx];
-    const updated = [...prev];
-    updated[idx] = { ...base, count: base.count - 1 };
-    updated.push({ ...base, count: 1, items: [{ itemId }] });
-    return updated;
-  });
-};
-
-const handleRemoveItemFromUnit = (itemId: number, unitIndex: number) => {
-  setSelectedUnits((prev) => {
-    const updated = [...prev];
-    const removed = updated.splice(unitIndex, 1)[0];
-
-    const mergeIdx = updated.findIndex(
-      (u) => u.name === removed.name && (!u.items || u.items.length < u.count)
+    // Controllo singleton: deve essere esplicitamente true E l'oggetto già assegnato
+    const alreadyAssigned = selectedUnits.some((u) =>
+      u.items?.some((it) => it.itemId === itemId)
     );
 
-    if (mergeIdx !== -1) {
-      updated[mergeIdx] = {
-        ...updated[mergeIdx],
-        count: updated[mergeIdx].count + 1,
-      };
-    } else {
-      updated.push({ ...removed, count: 1, items: [] });
+    if (singleton === true && alreadyAssigned) {
+      toast.error("Questo oggetto è singleton e già assegnato.");
+      return;
     }
 
-    return updated;
-  });
-};
+    const unit = selectedUnits.find(
+      (u) => u.name === unitName && (u.items?.length ?? 0) < u.count
+    );
+    if (!unit) {
+      toast.error("Nessuna unità valida trovata per l'assegnazione.");
+      return;
+    }
 
+    if ((unit.items?.length ?? 0) >= perUnit) {
+      toast.error(`Questa unità può avere solo ${perUnit} oggetto(i).`);
+      return;
+    }
 
+    if (
+      item.reservedToUnitType !== "any" &&
+      unit.type !== item.reservedToUnitType
+    ) {
+      toast.error(
+        `Questo oggetto può essere assegnato solo a ${item.reservedToUnitType}`
+      );
+      return;
+    }
+
+    setSelectedUnits((prev) => {
+      const idx = prev.findIndex(
+        (u) => u.name === unitName && (!u.items || u.items.length < u.count)
+      );
+      if (idx === -1) return prev;
+      const base = prev[idx];
+      const updated = [...prev];
+      updated[idx] = { ...base, count: base.count - 1 };
+      updated.push({ ...base, count: 1, items: [{ itemId }] });
+      return updated;
+    });
+  };
+
+  const handleRemoveItemFromUnit = (itemId: number, unitIndex: number) => {
+    setSelectedUnits((prev) => {
+      const updated = [...prev];
+      const removed = updated.splice(unitIndex, 1)[0];
+
+      const mergeIdx = updated.findIndex(
+        (u) => u.name === removed.name && (!u.items || u.items.length < u.count)
+      );
+
+      if (mergeIdx !== -1) {
+        updated[mergeIdx] = {
+          ...updated[mergeIdx],
+          count: updated[mergeIdx].count + 1,
+        };
+      } else {
+        updated.push({ ...removed, count: 1, items: [] });
+      }
+
+      return updated;
+    });
+  };
 
   if (mode === "start") {
     return (
@@ -527,8 +540,8 @@ const handleRemoveItemFromUnit = (itemId: number, unitIndex: number) => {
                 validateDynamic().length > 0
               }
               game={game}
-                onAssignItem={handleAssignItem}
-  onRemoveItemFromUnit={handleRemoveItemFromUnit}
+              onAssignItem={handleAssignItem}
+              onRemoveItemFromUnit={handleRemoveItemFromUnit}
             />
           </div>
         </div>

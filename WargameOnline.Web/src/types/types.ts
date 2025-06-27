@@ -11,6 +11,26 @@ export type Cost = {
   amount: number;
 }
 
+export type ItemsLimitations = {
+  itemsInSingleton?: boolean;
+  howManyPerUnit?: number;
+}
+
+export type ItemsRule = {
+  itemPlayability?: ItemsLimitations; // Era: itemPlayabilityPerType
+}
+
+export type GameSystem = {
+  id: number;
+  name: string;
+  factions: Faction[];
+  itemsRule?: ItemsRule; // Era: itemsRules
+  items?: Item[];
+  mapType?: string;
+  measureUnit?: string;
+};
+
+
 export type Item = {
 id: number;
   name: string;
@@ -27,16 +47,6 @@ export type ItemEffect = {
   what?: any;
   limits?: any;
 }
-
-export type ItemsLimitations = {
-  itemsInSingleton?: boolean;
-  howManyPerUnit?: number;
-}
-
-export type ItemsRule = {
-  itemPlayabilityPerType?: ItemsLimitations;
-}
-
 
 
 export type Rule = {
@@ -166,12 +176,3 @@ export type Faction = {
   unitRules: UnitRule[];
 };
 
-export type GameSystem = {
-  id: number;
-  name: string;
-  factions: Faction[];
-    itemsRules?: ItemsRule;
-  items?: Item[];
-  mapType?: string;
-  measureUnit?: string;
-};

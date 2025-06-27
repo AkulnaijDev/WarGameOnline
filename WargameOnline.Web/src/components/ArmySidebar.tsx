@@ -49,7 +49,7 @@ export default function ArmySidebar({
   >({});
   const items = game?.items ?? [];
   const isSingleton =
-    game?.itemsRules?.itemPlayabilityPerType?.itemsInSingleton ?? false;
+    game?.itemsRule?.itemPlayability?.itemsInSingleton ?? false;
 
   const groupedUnits = selectedUnits
     .filter((u) => u.count > 0)
@@ -144,16 +144,16 @@ export default function ArmySidebar({
       {items.length > 0 && (
         <div className="mt-4 border-t border-slate-600 pt-2 text-sm">
           <h4 className="font-semibold mb-2">🎒 Oggetti disponibili</h4>
+
           {items.map((item) => {
-            const assignedCount = selectedUnits.reduce(
-              (sum, u) =>
-                sum +
-                (u.items?.filter((i) => i.itemId === item.id).length ?? 0),
-              0
-            );
             const howManyPerUnit =
-              game?.itemsRules?.itemPlayabilityPerType?.howManyPerUnit ?? 1;
-            const isItemSingletonAssigned = isSingleton && assignedCount > 0;
+              game?.itemsRule?.itemPlayability?.howManyPerUnit ?? 1;
+
+            const isItemSingletonAssigned =
+              isSingleton &&
+              selectedUnits.some((unit) =>
+                unit.items?.some((unitItem) => unitItem.itemId === item.id)
+              );
 
             const compatible = selectedUnits.filter(
               (u) =>
