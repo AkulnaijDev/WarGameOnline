@@ -393,7 +393,11 @@ export default function ArmyCreator() {
       return updated;
     });
   };
-
+  const handleRemoveSpecificUnit = (indexToRemove: number) => {
+    setSelectedUnits((prev) =>
+      prev.filter((_, index) => index !== indexToRemove)
+    );
+  };
   if (mode === "start") {
     return (
       <div className="min-h-screen flex flex-col sm:flex-row bg-bg text-white">
@@ -542,6 +546,7 @@ export default function ArmyCreator() {
               game={game}
               onAssignItem={handleAssignItem}
               onRemoveItemFromUnit={handleRemoveItemFromUnit}
+              onRemoveSpecificUnit={handleRemoveSpecificUnit}
             />
           </div>
         </div>

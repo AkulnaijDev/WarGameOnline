@@ -1,7 +1,7 @@
 import { UnitWithCount, GameSystem } from "../types/types";
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
-
+// Dobbiamo aggiungere una nuova prop per gestire l'eliminazione specifica
 type Props = {
   selectedUnits: UnitWithCount[];
   totalCount: number;
@@ -14,6 +14,7 @@ type Props = {
   minUnits?: number;
   selectedArmyId: number | null;
   onChangeCount: (unitName: string, delta: number) => void;
+  onRemoveSpecificUnit: (index: number) => void; // NUOVA PROP NECESSARIA
   onExport: () => void;
   onSave: () => void;
   onDelete: () => void;
@@ -35,6 +36,7 @@ export default function ArmySidebar({
   minUnits,
   selectedArmyId,
   onChangeCount,
+  onRemoveSpecificUnit, // NUOVA PROP
   onExport,
   onSave,
   onDelete,
@@ -48,72 +50,105 @@ export default function ArmySidebar({
     Record<number, string>
   >({});
   const items = game?.items ?? [];
-  const isSingleton =
-    game?.itemsRule?.itemPlayability?.itemsInSingleton ?? false;
+  const isSingleton = game?.itemsRule?.itemPlayability?.itemsInSingleton ?? false;
 
-  const groupedUnits = selectedUnits
-    .filter((u) => u.count > 0)
-    .reduce((acc, unit) => {
-      const existing = acc.find(
-        (x) =>
-          x.name === unit.name &&
-          (!x.items || x.items.length === 0) &&
-          (!unit.items || unit.items.length === 0)
+  // Nuova logica: manteniamo l'indice originale e raggruppiamo SOLO le unità identiche senza oggetti
+  const processedUnits = selectedUnits
+    .map((unit, originalIndex) => ({
+      ...unit,
+      originalIndex,
+      hasItems: !!(unit.items && unit.items.length > 0)
+    }))
+    .filter(u => u.count > 0);
+
+  // Raggruppiamo solo le unità senza oggetti che sono identiche
+  const displayUnits = processedUnits.reduce((acc, unit) => {
+    if (unit.hasItems) {
+      // Le unità con oggetti non vengono mai raggruppate
+      const itemId = unit.items?.[0]?.itemId;
+      const itemName = items.find((i) => i.id === itemId)?.name ?? "";
+      acc.push({
+        ...unit,
+        label: `${unit.name} 🧪 (${itemName})`,
+        displayCount: unit.count,
+        isGrouped: false,
+        groupIndices: [unit.originalIndex]
+      });
+    } else {
+      // Per unità senza oggetti, cerchiamo un gruppo esistente
+      const existingGroup = acc.find(
+        (x) => x.name === unit.name && !x.hasItems && x.isGrouped
       );
-      if (existing) {
-        existing.count += unit.count;
+      
+      if (existingGroup) {
+        // Aggiungiamo al gruppo esistente
+        existingGroup.displayCount += unit.count;
+        existingGroup.groupIndices.push(unit.originalIndex);
       } else {
-        const itemId = unit.items?.[0]?.itemId;
-        const itemName = items.find((i) => i.id === itemId)?.name ?? "";
+        // Creiamo un nuovo gruppo
         acc.push({
           ...unit,
-          label: unit.items?.length
-            ? `${unit.name} 🧪 (${itemName})`
-            : unit.name,
+          label: unit.name,
+          displayCount: unit.count,
+          isGrouped: true,
+          groupIndices: [unit.originalIndex]
         });
       }
-      return acc;
-    }, [] as Array<UnitWithCount & { label: string }>);
+    }
+    return acc;
+  }, [] as Array<UnitWithCount & { 
+    originalIndex: number;
+    hasItems: boolean;
+    label: string; 
+    displayCount: number;
+    isGrouped: boolean;
+    groupIndices: number[];
+  }>);
 
   return (
     <div className="w-full h-full bg-slate-800 p-4 rounded border border-slate-700 space-y-4">
       <h2 className="text-lg font-semibold">{t("yourArmyText")}</h2>
 
-      {groupedUnits.length === 0 ? (
+      {displayUnits.length === 0 ? (
         <p className="text-sm text-slate-400">{t("noUnitsAddedYet")}</p>
       ) : (
         <ul className="space-y-2">
-          {groupedUnits.map((u, idx) => (
+          {displayUnits.map((u, idx) => (
             <li
-              key={`${u.name}-${idx}`}
+              key={`${u.name}-${u.originalIndex}-${u.items?.[0]?.itemId || 'no-item'}`}
               className="flex justify-between items-center border-b border-slate-600 pb-1"
             >
               <span className="flex-1">
-                {u.label} ×{u.count}
+                {u.label} ×{u.displayCount}
               </span>
               <div className="flex items-center gap-2">
-                {u.items?.length ? (
+                {u.hasItems ? (
+                  // Unità con oggetti - gestione individuale specifica
                   <>
                     <button
-                      title="Rimuovi solo l’oggetto"
+                      title="Rimuovi solo l'oggetto"
                       onClick={() => {
                         const itemId = u.items?.[0]?.itemId;
-                        if (itemId !== undefined)
-                          onRemoveItemFromUnit(itemId, idx);
+                        if (itemId !== undefined) {
+                          onRemoveItemFromUnit(itemId, u.originalIndex);
+                        }
                       }}
                       className="text-yellow-400 hover:text-yellow-300 text-sm"
                     >
                       🎯
                     </button>
                     <button
-                      title="Rimuovi unità"
-                      onClick={() => onChangeCount(u.name, -u.count)}
+                      title="Rimuovi questa unità specifica"
+                      onClick={() => {
+                        onRemoveSpecificUnit(u.originalIndex);
+                      }}
                       className="text-red-400 hover:text-red-300 text-sm"
                     >
                       🗑️
                     </button>
                   </>
                 ) : (
+                  // Unità senza oggetti - gestione di gruppo
                   <>
                     <button
                       onClick={() => onChangeCount(u.name, -1)}
@@ -128,7 +163,7 @@ export default function ArmySidebar({
                       ➕
                     </button>
                     <button
-                      onClick={() => onChangeCount(u.name, -u.count)}
+                      onClick={() => onChangeCount(u.name, -u.displayCount)}
                       className="text-slate-400 hover:text-red-500"
                     >
                       🗑️
@@ -144,16 +179,14 @@ export default function ArmySidebar({
       {items.length > 0 && (
         <div className="mt-4 border-t border-slate-600 pt-2 text-sm">
           <h4 className="font-semibold mb-2">🎒 Oggetti disponibili</h4>
-
+          
           {items.map((item) => {
-            const howManyPerUnit =
-              game?.itemsRule?.itemPlayability?.howManyPerUnit ?? 1;
-
-            const isItemSingletonAssigned =
-              isSingleton &&
-              selectedUnits.some((unit) =>
-                unit.items?.some((unitItem) => unitItem.itemId === item.id)
-              );
+            const howManyPerUnit = game?.itemsRule?.itemPlayability?.howManyPerUnit ?? 1;
+            
+            // Calcola se l'oggetto singleton è già assegnato
+            const isItemSingletonAssigned = isSingleton && selectedUnits.some(unit => 
+              unit.items?.some(unitItem => unitItem.itemId === item.id)
+            );
 
             const compatible = selectedUnits.filter(
               (u) =>
