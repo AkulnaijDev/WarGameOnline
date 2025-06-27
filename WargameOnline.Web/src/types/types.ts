@@ -3,7 +3,7 @@ export type SavedArmy = {
   name: string;
   game: string;
   faction: string;
-  units: UnitWithCount[];
+  units: UnitWithItem[];
 };
 
 export type Cost = {
@@ -68,9 +68,7 @@ export type Attack = {
 
 
 
-export type UnitWithCount = Unit & { 
-  count: number; 
-  points?: number, 
+export type UnitWithItem = Unit & {
   factionId: number;
   items?: { itemId: number }[];
 };

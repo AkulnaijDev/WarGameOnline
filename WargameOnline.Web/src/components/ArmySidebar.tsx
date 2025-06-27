@@ -1,9 +1,9 @@
-import { UnitWithCount, GameSystem } from "../types/types";
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
+import { GameSystem, UnitWithItem } from "../types/types";
 
 type Props = {
-  selectedUnits: UnitWithCount[];
+  selectedUnits: UnitWithItem[];
   totalCount: number;
   totalPoints: number;
   thresholdStep: number;
@@ -13,8 +13,6 @@ type Props = {
   violations: string[];
   minUnits?: number;
   selectedArmyId: number | null;
-  onChangeCount: (unitName: string, delta: number) => void;
-  onRemoveSpecificUnit: (index: number) => void;
   onExport: () => void;
   onSave: () => void;
   onDelete: () => void;
@@ -22,6 +20,9 @@ type Props = {
   game?: GameSystem | null;
   onAssignItem: (itemId: number, unitName: string) => void;
   onRemoveItemFromUnit: (itemId: number, unitIndex: number) => void;
+  onRemoveSpecificUnit: (index: number) => void;
+  onAddUnit: (unit: UnitWithItem) => void;
+  onRemoveUnitsByName:(unitName: string) => void;
 };
 
 export default function ArmySidebar({
@@ -35,8 +36,6 @@ export default function ArmySidebar({
   violations,
   minUnits,
   selectedArmyId,
-  onChangeCount,
-  onRemoveSpecificUnit,
   onExport,
   onSave,
   onDelete,
@@ -44,80 +43,89 @@ export default function ArmySidebar({
   game,
   onAssignItem,
   onRemoveItemFromUnit,
+  onRemoveSpecificUnit,
+  onAddUnit,
+  onRemoveUnitsByName
 }: Props) {
   const { t } = useTranslation();
-  const [selectedItemUnitMap, setSelectedItemUnitMap] = useState<Record<number, string>>({});
+  const [selectedItemUnitMap, setSelectedItemUnitMap] = useState<
+    Record<number, string>
+  >({});
+
   const items = game?.items ?? [];
-  const isSingleton = game?.itemsRule?.itemPlayability?.itemsInSingleton ?? false;
+  const isSingleton =
+    game?.itemsRule?.itemPlayability?.itemsInSingleton ?? false;
+  const howManyPerUnit = game?.itemsRule?.itemPlayability?.howManyPerUnit ?? 1;
 
-  const processedUnits = selectedUnits
-    .map((unit, originalIndex) => ({
-      ...unit,
-      originalIndex,
-      hasItems: !!(unit.items && unit.items.length > 0),
-    }))
-    .filter((u) => u.count > 0);
+  const groupedUnits = selectedUnits.reduce(
+    (acc, unit, index) => {
+      const hasItems = unit.items && unit.items.length > 0;
+      const item = hasItems
+        ? items.find((i) => i.id === unit.items![0].itemId)
+        : null;
 
-  const displayUnits = processedUnits.reduce((acc, unit) => {
-    if (unit.hasItems) {
-      const itemId = unit.items?.[0]?.itemId;
-      const itemName = items.find((i) => i.id === itemId)?.name ?? "";
-      acc.push({
-        ...unit,
-        label: `${unit.name} 🧪 (${itemName})`,
-        displayCount: unit.count,
-        isGrouped: false,
-        groupIndices: [unit.originalIndex],
-      });
-    } else {
-      const existingGroup = acc.find((x) => x.name === unit.name && !x.hasItems && x.isGrouped);
-      if (existingGroup) {
-        existingGroup.displayCount += unit.count;
-        existingGroup.groupIndices.push(unit.originalIndex);
-      } else {
+      if (hasItems) {
         acc.push({
-          ...unit,
-          label: unit.name,
-          displayCount: unit.count,
-          isGrouped: true,
-          groupIndices: [unit.originalIndex],
+          label: `${unit.name} 🧪 (${item?.name ?? "?"})`,
+          unit,
+          originalIndex: index,
+          isGrouped: false,
+          groupIndices: [index],
         });
+      } else {
+        const existing = acc.find(
+          (u) =>
+            u.unit.name === unit.name && !u.unit.items?.length && u.isGrouped
+        );
+        if (existing) {
+          existing.groupIndices.push(index);
+        } else {
+          acc.push({
+            label: unit.name,
+            unit,
+            isGrouped: true,
+            groupIndices: [index],
+          });
+        }
       }
-    }
-    return acc;
-  }, [] as Array<UnitWithCount & {
-    originalIndex: number;
-    hasItems: boolean;
-    label: string;
-    displayCount: number;
-    isGrouped: boolean;
-    groupIndices: number[];
-  }>);
+      return acc;
+    },
+    [] as Array<{
+      label: string;
+      unit: UnitWithItem;
+      isGrouped: boolean;
+      groupIndices: number[];
+      originalIndex?: number;
+    }>
+  );
 
   return (
     <div className="w-full h-full bg-slate-800 p-4 rounded border border-slate-700 space-y-4">
       <h2 className="text-lg font-semibold">{t("yourArmyText")}</h2>
 
-      {displayUnits.length === 0 ? (
+      {groupedUnits.length === 0 ? (
         <p className="text-sm text-slate-400">{t("noUnitsAddedYet")}</p>
       ) : (
         <ul className="space-y-2">
-          {displayUnits.map((u, idx) => (
+          {groupedUnits.map((u, idx) => (
             <li
-              key={`${u.name}-${u.originalIndex}-${u.items?.[0]?.itemId || "no-item"}`}
+              key={`${u.label}-${idx}`}
               className="flex justify-between items-center border-b border-slate-600 pb-1"
             >
               <span className="flex-1">
-                {u.label} ×{u.displayCount}
+                {u.label} ×{u.groupIndices.length}
               </span>
               <div className="flex items-center gap-2">
-                {u.hasItems ? (
+                {u.unit.items?.length ? (
                   <>
                     <button
-                      title="Rimuovi solo l'oggetto"
+                      title="Rimuovi solo l’oggetto"
                       onClick={() => {
-                        const itemId = u.items?.[0]?.itemId;
-                        if (itemId !== undefined) {
+                        const itemId = u.unit.items?.[0]?.itemId;
+                        if (
+                          itemId !== undefined &&
+                          u.originalIndex !== undefined
+                        ) {
                           onRemoveItemFromUnit(itemId, u.originalIndex);
                         }
                       }}
@@ -126,9 +134,11 @@ export default function ArmySidebar({
                       🎯
                     </button>
                     <button
-                      title="Rimuovi questa unità specifica"
+                      title="Rimuovi unità"
                       onClick={() => {
-                        onRemoveSpecificUnit(u.originalIndex);
+                        if (u.originalIndex !== undefined) {
+                          onRemoveSpecificUnit(u.originalIndex);
+                        }
                       }}
                       className="text-red-400 hover:text-red-300 text-sm"
                     >
@@ -138,22 +148,29 @@ export default function ArmySidebar({
                 ) : (
                   <>
                     <button
-                      onClick={() => onChangeCount(u.name, -1)}
-                      className="text-red-400 hover:text-red-300"
-                    >
-                      ➖
-                    </button>
-                    <button
-                      onClick={() => onChangeCount(u.name, +1)}
-                      className="text-green-400 hover:text-green-300"
+                      title="Aggiungi una copia"
+                      onClick={() => onAddUnit(u.unit)}
+                      className="text-green-400 hover:text-green-300 text-sm"
                     >
                       ➕
                     </button>
                     <button
+                      title="Rimuovi una copia"
                       onClick={() => {
-                        u.groupIndices.forEach((idx) => onRemoveSpecificUnit(idx));
+                        const lastIndex = u.groupIndices.at(-1);
+                        if (lastIndex !== undefined)
+                          onRemoveSpecificUnit(lastIndex);
                       }}
-                      className="text-slate-400 hover:text-red-500"
+                      className="text-yellow-400 hover:text-yellow-300 text-sm"
+                    >
+                      ➖
+                    </button>
+                    <button
+                      title="Rimuovi tutte le copie"
+                      onClick={() =>
+                        onRemoveUnitsByName(u.unit.name)
+                      }
+                      className="text-red-400 hover:text-red-300 text-sm"
                     >
                       🗑️
                     </button>
@@ -169,18 +186,18 @@ export default function ArmySidebar({
         <div className="mt-4 border-t border-slate-600 pt-2 text-sm">
           <h4 className="font-semibold mb-2">🎒 Oggetti disponibili</h4>
           {items.map((item) => {
-            const howManyPerUnit = game?.itemsRule?.itemPlayability?.howManyPerUnit ?? 1;
-            const assigned = selectedUnits.some((u) =>
+            const assignedCount = selectedUnits.filter((u) =>
               u.items?.some((i) => i.itemId === item.id)
-            );
-            const isItemSingletonAssigned = isSingleton && assigned;
+            ).length;
+            const isItemSingletonAssigned = isSingleton && assignedCount >= 1;
 
             const compatible = selectedUnits.filter(
               (u) =>
-                u.count > (u.items?.length ?? 0) &&
-                (item.reservedToUnitType === "any" || u.type === item.reservedToUnitType) &&
-                (u.items?.length ?? 0) < howManyPerUnit
+                (!u.items || u.items.length < howManyPerUnit) &&
+                (item.reservedToUnitType === "any" ||
+                  u.type === item.reservedToUnitType)
             );
+
             const uniqueAssignable = Array.from(
               new Map(compatible.map((u) => [u.name, u])).values()
             );
@@ -199,7 +216,7 @@ export default function ArmySidebar({
                       [item.id]: e.target.value,
                     }))
                   }
-                  disabled={isItemSingletonAssigned || compatible.length === 0}
+                  disabled={isItemSingletonAssigned}
                 >
                   <option value="">— seleziona unità —</option>
                   {uniqueAssignable.map((u) => (
@@ -211,9 +228,7 @@ export default function ArmySidebar({
                 <button
                   className="px-2 py-1 bg-green-600 rounded text-xs text-white"
                   disabled={
-                    !selectedItemUnitMap[item.id] ||
-                    isItemSingletonAssigned ||
-                    compatible.length === 0
+                    !selectedItemUnitMap[item.id] || isItemSingletonAssigned
                   }
                   onClick={() => {
                     const unitName = selectedItemUnitMap[item.id];
@@ -272,7 +287,11 @@ export default function ArmySidebar({
           <button
             onClick={onExport}
             className="py-2 w-full bg-indigo-600 hover:bg-indigo-500 text-white text-sm rounded disabled:opacity-50"
-            disabled={selectedUnits.length === 0 || !basicValid || !dynamicValid}
+           disabled={
+  selectedUnits.length === 0 ||
+  !basicValid ||
+  !dynamicValid
+}
           >
             📄 Download PDF
           </button>

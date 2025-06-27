@@ -1,13 +1,13 @@
 import { jsPDF } from "jspdf";
 import { TFunction } from "i18next";
-import { Game, Faction, UnitWithCount } from "../types/types";
+import { GameSystem, Faction, UnitWithItem } from "../types/types";
 
 export const exportPdf = (
   t: TFunction,
   armyName: string,
-  game: Game | null,
+  game: GameSystem | null,
   faction: Faction | null,
-  selectedUnits: UnitWithCount[],
+  selectedUnits: UnitWithItem[],
   totalPoints: number,
   totalCount: number,
   validateDynamic: () => string[]
@@ -19,7 +19,11 @@ export const exportPdf = (
 
   doc.setFontSize(12);
   doc.text(`${t("pdfGame")} ${game?.name || "-"}`, 10, 30);
-  doc.text(`${t("pdfFaction")} ${faction?.displayName || faction?.name || "-"}`, 10, 37);
+  doc.text(
+    `${t("pdfFaction")} ${faction?.displayName || faction?.name || "-"}`,
+    10,
+    37
+  );
   doc.text(`${t("pdfPoints")} ${totalPoints}`, 10, 44);
   doc.text(`${t("pdfUnits")} ${totalCount}`, 10, 51);
 
@@ -36,42 +40,55 @@ export const exportPdf = (
     doc.text("🛡️ Regole della fazione:", 10, y);
     y += 6;
     faction.armyRules.forEach((r) => {
-      doc.text(`• ${r.name}: ${r.rule}`, 12, y);
+      doc.text(`• ${r.name}: ${r.rules}`, 12, y);
       y += 6;
     });
     y += 4;
   }
 
   if (faction?.armySpells?.length) {
-    doc.text("✨ Incantesimi disponibili:", 10, y);
+    doc.text("Incantesimi disponibili:", 10, y);
     y += 6;
+
     faction.armySpells.forEach((s) => {
-      doc.text(
-        `• ${s.name} — ${s.effect} (Range: ${s.rangeInCm}cm | Diff: ${s.difficultyToCast})`,
-        12,
-        y
-      );
-      y += 6;
+      const spellLine = `• ${s.name} — ${s.effect} (Range: ${s.rangeInCm}cm | Diff: ${s.difficultyToCast})`;
+      const wrapped = doc.splitTextToSize(spellLine, 150);
+      doc.text(wrapped, 12, y);
+      y += 7;
+
       if (s.flavourText) {
+        const spellFlavourText = `“${s.flavourText}”`;
+        const wrappedFlavour = doc.splitTextToSize(spellFlavourText, 200);
+
         doc.setFontSize(10);
         doc.setTextColor(120);
-        doc.text(`“${s.flavourText}”`, 14, y);
+        doc.text(wrappedFlavour, 14, y);
         y += 5;
         doc.setFontSize(12);
         doc.setTextColor(0);
       }
+
+       y += 7;
     });
+
     y += 4;
   }
 
   doc.text(t("pdfUnitsSelected"), 10, y);
   y += 7;
+
   selectedUnits.forEach((u) => {
-    doc.text(
-      `${u.name} ×${u.count} (${u.pointsPerUnit ?? u.points} ${t("pointsShortMinus")})`,
-      12,
-      y
-    );
+    const basePts = u.pointsPerUnit ?? 0;
+    const item = u.items?.[0];
+    const itemData = item
+      ? game?.items?.find((i) => i.id === item.itemId)
+      : null;
+    const itemText = itemData
+      ? ` + ${itemData.name} (${itemData.cost.amount} Pti)`
+      : "";
+    const total = basePts + (itemData?.cost.amount ?? 0);
+
+    doc.text(`1x ${u.name}${itemText} = ${total} Pti`, 12, y);
     y += 6;
 
     const unitRules = u.rules
@@ -80,7 +97,7 @@ export const exportPdf = (
     unitRules?.forEach((r) => {
       doc.setFontSize(10);
       doc.setTextColor(80);
-      doc.text(`› ${r?.name}: ${r?.rule}`, 14, y);
+      doc.text(`› ${r?.name}: ${r?.gameRules}`, 14, y);
       y += 5;
       doc.setFontSize(12);
       doc.setTextColor(0);
