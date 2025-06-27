@@ -785,7 +785,7 @@
             "id":5,
             "name":"Crown of Command",
             "cost":{"currency":"points", "amount": 70},
-            "reservedToUnitType":"general",
+            "reservedToUnitType":"General",
             "description":"",
             "effects":[{
               "action": "statReplacement",

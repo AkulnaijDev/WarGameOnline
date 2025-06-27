@@ -44,20 +44,36 @@ export default function ArmySidebar({
   onRemoveItemFromUnit,
 }: Props) {
   const { t } = useTranslation();
-  const [selectedItemUnitMap, setSelectedItemUnitMap] = useState<Record<number, string>>({});
+  const [selectedItemUnitMap, setSelectedItemUnitMap] = useState<
+    Record<number, string>
+  >({});
+  const items = game?.items ?? [];
+  const isSingleton =
+    game?.itemsRules?.itemPlayabilityPerType?.itemsInSingleton ?? false;
 
-  const isSingleton = game?.itemsRules?.itemPlayabilityPerType?.itemsInSingleton ?? false;
-
-  const groupedUnits = selectedUnits.reduce((acc, unit) => {
-    if (unit.items?.length) {
-      const itemId = unit.items[0]?.itemId;
-      const itemName = game?.items?.find((i) => i.id === itemId)?.name ?? "item";
-      acc.push({ ...unit, label: `${unit.name} 🧪 (${itemName})` });
-    } else {
-      acc.push({ ...unit, label: unit.name });
-    }
-    return acc;
-  }, [] as Array<UnitWithCount & { label: string }>);
+  const groupedUnits = selectedUnits
+    .filter((u) => u.count > 0)
+    .reduce((acc, unit) => {
+      const existing = acc.find(
+        (x) =>
+          x.name === unit.name &&
+          (!x.items || x.items.length === 0) &&
+          (!unit.items || unit.items.length === 0)
+      );
+      if (existing) {
+        existing.count += unit.count;
+      } else {
+        const itemId = unit.items?.[0]?.itemId;
+        const itemName = items.find((i) => i.id === itemId)?.name ?? "";
+        acc.push({
+          ...unit,
+          label: unit.items?.length
+            ? `${unit.name} 🧪 (${itemName})`
+            : unit.name,
+        });
+      }
+      return acc;
+    }, [] as Array<UnitWithCount & { label: string }>);
 
   return (
     <div className="w-full h-full bg-slate-800 p-4 rounded border border-slate-700 space-y-4">
@@ -72,26 +88,27 @@ export default function ArmySidebar({
               key={`${u.name}-${idx}`}
               className="flex justify-between items-center border-b border-slate-600 pb-1"
             >
-              <span className="flex-1">{u.label} ×{u.count}</span>
+              <span className="flex-1">
+                {u.label} ×{u.count}
+              </span>
               <div className="flex items-center gap-2">
                 {u.items?.length ? (
                   <>
                     <button
-                      title={t("removeOnlyItem")}
-                      className="text-yellow-400 hover:text-yellow-300 text-sm"
+                      title="Rimuovi solo l’oggetto"
                       onClick={() => {
-  const itemId = u.items?.[0]?.itemId;
-  if (itemId !== undefined) {
-    onRemoveItemFromUnit(itemId, idx);
-  }
-}}
+                        const itemId = u.items?.[0]?.itemId;
+                        if (itemId !== undefined)
+                          onRemoveItemFromUnit(itemId, idx);
+                      }}
+                      className="text-yellow-400 hover:text-yellow-300 text-sm"
                     >
                       🎯
                     </button>
                     <button
-                      title={t("removeWholeUnit")}
-                      className="text-red-400 hover:text-red-300 text-sm"
+                      title="Rimuovi unità"
                       onClick={() => onChangeCount(u.name, -u.count)}
+                      className="text-red-400 hover:text-red-300 text-sm"
                     >
                       🗑️
                     </button>
@@ -124,33 +141,36 @@ export default function ArmySidebar({
         </ul>
       )}
 
-      {game?.items && game.items.length > 0 && (
+      {items.length > 0 && (
         <div className="mt-4 border-t border-slate-600 pt-2 text-sm">
-          <h4 className="font-semibold mb-2">🎒 {t("availableItems")}</h4>
-          {game.items.map((item) => {
-            const alreadyUsed =
-              isSingleton &&
-              selectedUnits.some((u) =>
-                u.items?.some((i) => i.itemId === item.id)
-              );
-            if (alreadyUsed) return null;
+          <h4 className="font-semibold mb-2">🎒 Oggetti disponibili</h4>
+          {items.map((item) => {
+            const assignedCount = selectedUnits.reduce(
+              (sum, u) =>
+                sum +
+                (u.items?.filter((i) => i.itemId === item.id).length ?? 0),
+              0
+            );
+            const howManyPerUnit =
+              game?.itemsRules?.itemPlayabilityPerType?.howManyPerUnit ?? 1;
+            const isItemSingletonAssigned = isSingleton && assignedCount > 0;
 
-            const validUnitTypes = Array.from(
-              new Map(
-                selectedUnits
-                  .filter(
-                    (u) =>
-                      (item.reservedToUnitType === "any" ||
-                        u.type === item.reservedToUnitType) &&
-                      (!u.items || u.items.length < u.count)
-                  )
-                  .map((u) => [u.name, u])
-              ).values()
+            const compatible = selectedUnits.filter(
+              (u) =>
+                u.count > (u.items?.length ?? 0) &&
+                (item.reservedToUnitType === "any" ||
+                  u.type === item.reservedToUnitType) &&
+                (u.items?.length ?? 0) < howManyPerUnit
+            );
+            const uniqueAssignable = Array.from(
+              new Map(compatible.map((u) => [u.name, u])).values()
             );
 
             return (
               <div key={item.id} className="flex items-center mb-2 space-x-2">
-                <span className="flex-1">{item.name} ({item.cost.amount} pts)</span>
+                <span className="flex-1">
+                  {item.name} ({item.cost.amount} pts)
+                </span>
                 <select
                   className="text-xs px-1 py-0.5 rounded bg-slate-700 border"
                   value={selectedItemUnitMap[item.id] ?? ""}
@@ -160,9 +180,10 @@ export default function ArmySidebar({
                       [item.id]: e.target.value,
                     }))
                   }
+                  disabled={isItemSingletonAssigned || compatible.length === 0}
                 >
-                  <option value="">— {t("selectUnit")} —</option>
-                  {validUnitTypes.map((u) => (
+                  <option value="">— seleziona unità —</option>
+                  {uniqueAssignable.map((u) => (
                     <option key={u.name} value={u.name}>
                       {u.name}
                     </option>
@@ -170,14 +191,23 @@ export default function ArmySidebar({
                 </select>
                 <button
                   className="px-2 py-1 bg-green-600 rounded text-xs text-white"
-                  disabled={!selectedItemUnitMap[item.id]}
+                  disabled={
+                    !selectedItemUnitMap[item.id] ||
+                    isItemSingletonAssigned ||
+                    compatible.length === 0
+                  }
                   onClick={() => {
                     const unitName = selectedItemUnitMap[item.id];
-                    onAssignItem(item.id, unitName);
-                    setSelectedItemUnitMap((prev) => ({ ...prev, [item.id]: "" }));
+                    if (unitName) {
+                      onAssignItem(item.id, unitName);
+                      setSelectedItemUnitMap((prev) => ({
+                        ...prev,
+                        [item.id]: "",
+                      }));
+                    }
                   }}
                 >
-                  {t("assign")}
+                  Assegna
                 </button>
               </div>
             );
@@ -185,20 +215,32 @@ export default function ArmySidebar({
         </div>
       )}
 
-      {/* Riepilogo finale */}
       <div className="mt-4 border-t border-slate-600 pt-2 text-sm space-y-1">
-        <p>{t("totalUnits")} <span className="font-semibold">{totalCount}</span></p>
-        <p>{t("totalPoints")} <span className="font-semibold">{totalPoints}</span></p>
+        <p>
+          Unità totali: <span className="font-semibold">{totalCount}</span>
+        </p>
+        <p>
+          Punti totali: <span className="font-semibold">{totalPoints}</span>
+        </p>
         {minUnits !== undefined && (
-          <p>{t("minUnitsRequired")} <span className="font-semibold">{minUnits}</span></p>
+          <p>
+            Unità minime richieste:{" "}
+            <span className="font-semibold">{minUnits}</span>
+          </p>
         )}
         {thresholdStep > 0 && (
-          <p>{t("thresholdRule")} {thresholdStep} pts → ×{multiplier}</p>
+          <p>
+            Regola di soglia: ogni {thresholdStep} pts → ×{multiplier}
+          </p>
         )}
-        <p className={`font-semibold ${basicValid && dynamicValid ? "text-green-400" : "text-red-400"}`}>
+        <p
+          className={`font-semibold ${
+            basicValid && dynamicValid ? "text-green-400" : "text-red-400"
+          }`}
+        >
           {basicValid && dynamicValid
-            ? t("allConstraintsSatisfied")
-            : t("constraintsViolated")}
+            ? "✔ Tutti i vincoli rispettati"
+            : "❌ Violazione dei vincoli"}
         </p>
         {!dynamicValid && (
           <ul className="text-xs text-red-300 list-disc list-inside mt-1 space-y-1">
@@ -211,23 +253,25 @@ export default function ArmySidebar({
           <button
             onClick={onExport}
             className="py-2 w-full bg-indigo-600 hover:bg-indigo-500 text-white text-sm rounded disabled:opacity-50"
-            disabled={selectedUnits.length === 0 || !basicValid || !dynamicValid}
+            disabled={
+              selectedUnits.length === 0 || !basicValid || !dynamicValid
+            }
           >
-            {t("downloadPDF")}
+            📄 Download PDF
           </button>
           <button
             onClick={onSave}
             className="py-2 w-full bg-green-600 hover:bg-green-500 text-white text-sm rounded disabled:opacity-50"
             disabled={isSaveDisabled}
           >
-            {selectedArmyId ? t("saveChanges") : t("saveArmy")}
+            {selectedArmyId ? "💾 Salva modifiche" : "💾 Salva esercito"}
           </button>
           {selectedArmyId && (
             <button
               onClick={onDelete}
               className="py-2 w-full bg-red-600 hover:bg-red-500 text-white text-sm rounded"
             >
-              {t("deleteArmy")}
+              🗑️ Elimina esercito
             </button>
           )}
         </div>
